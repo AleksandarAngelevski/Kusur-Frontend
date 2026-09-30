@@ -1,0 +1,18 @@
+<div class="totalBalanceCard">
+    <div class="netBalanceRow">
+        <span class="netBalanceHeader">Your net balance</span>
+        <p [class.positiveBalance]="netBalance() > 0" [class.negativeBalance]="netBalance() < 0">
+            {{ netBalance() > 0 ? '+' : '' }}{{ netBalance() | number:'1.0-0':'de-DE' }} ден
+        </p>
+    </div>
+    <div class="owedOweRow">
+        <div class="owedCell">
+            <span>You're owed</span>
+            <p [class.positiveBalance]="owedBalance() !== 0">{{ owedBalance() | number:'1.0-0':'de-DE' }} ден</p>
+        </div>
+        <div class="oweCell">
+            <span>You owe</span>
+            <p [class.negativeBalance]="oweBalance() !== 0">{{ oweBalance() | number:'1.0-0':'de-DE' }} ден</p>
+        </div>
+    </div>
+</div>

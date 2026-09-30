@@ -1,0 +1,13 @@
+<div class="group">
+    <div class="image"></div>
+    <div class="mainContent">
+        <p>{{ group().name }}</p>
+        <span>{{ group().memberCount }} members</span>
+    </div>
+    <div class="groupBalance"
+    [class.positiveBalance]="group().balance > 0"
+    [class.negativeBalance]="group().balance < 0">
+        {{ group().balance | number:'1.0-0':'de-DE'}} ден 
+    </div>
+
+</div>

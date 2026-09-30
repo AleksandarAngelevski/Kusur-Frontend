@@ -1,0 +1,8 @@
+<h1 id="header">Groups</h1>
+<div class="groups-container">
+    @for (group of groups(); track group.id){
+        <app-group-card [group]="group"/>
+    } @empty {
+        <p>No groups yet.</p>
+    }
+</div>
