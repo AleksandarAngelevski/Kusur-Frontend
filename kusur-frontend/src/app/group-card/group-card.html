@@ -1,13 +1,25 @@
-<div class="group">
-    <div class="image"></div>
+<div class="row">
+    <div class="av">
+        @if (group().imageUrl) {
+            <img [src]="group().imageUrl" [alt]="group().name">
+        } @else {
+            <span class="initials">{{ initials() }}</span>
+        }
+    </div>
     <div class="mainContent">
-        <p>{{ group().name }}</p>
-        <span>{{ group().memberCount }} members</span>
+        <div class="title">{{ group().name }}</div>
+        <div class="desc">{{ group().memberCount }} members</div>
     </div>
-    <div class="groupBalance"
-    [class.positiveBalance]="group().balance > 0"
-    [class.negativeBalance]="group().balance < 0">
-        {{ group().balance | number:'1.0-0':'de-DE'}} ден 
+    <div class="right">
+        @if (group().balance === 0) {
+            <span class="settled">Settled up</span>
+        } @else {
+            <span class="money"
+                  [class.credit]="group().balance > 0"
+                  [class.debit]="group().balance < 0">
+                {{ group().balance > 0 ? '+' : '' }}{{ group().balance | number:'1.0-0':'de-DE' }} ден
+            </span>
+            <span class="caption">{{ group().balance > 0 ? 'owed to you' : 'you owe' }}</span>
+        }
     </div>
-
 </div>

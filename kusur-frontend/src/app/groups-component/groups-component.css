@@ -1,0 +1,7 @@
+/* The list's top line comes from .register and each row draws its own bottom line. */
+
+/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
+.section-title{
+    font-family: var(--font-head);
+    margin-top: 36px;
+}

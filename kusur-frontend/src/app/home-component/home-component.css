@@ -1,14 +1,10 @@
 .home-wrapper{
-    background-color: var(--deep-bottle);
-    width:100%;
-    height:100vh;
+    width: 100%;
     padding: 10px 20px;
 }
 .currentDate{
-    color: var(--border);
-    font-family: "IBM Plex Mono", monospace;
-    font-optical-sizing: auto;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
     font-weight: 500;
-    font-style: normal;
     font-size: 15px;
 }

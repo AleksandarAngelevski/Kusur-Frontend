@@ -1,0 +1,31 @@
+/* Row, avatar, title and money styles come from the global design system. */
+:host{
+    display: block;
+}
+.av{
+    overflow: hidden;
+}
+.av img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.right{
+    gap: 2px;
+}
+.money{
+    font-size: 13px;
+}
+.caption{
+    font-size: 10.5px;
+    color: var(--ink-soft);
+}
+.settled{
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--credit);
+}
+.mainContent{
+    flex: 1;
+    min-width: 0;
+}

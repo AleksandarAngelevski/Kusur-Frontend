@@ -1,0 +1,4 @@
+/* leave room so the fixed bottom nav doesn't cover the end of the page */
+.page-content{
+    padding-bottom: 66px;
+}

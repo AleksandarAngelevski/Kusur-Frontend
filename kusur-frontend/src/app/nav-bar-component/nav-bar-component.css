@@ -1,10 +1,20 @@
+:host{
+    position: fixed;
+    display: block;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background-color: var(--till);
+    color: var(--till-ink-dim);
+    font-family: var(--font-head);
+    font-weight: 500;
+}
 ul{
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items:center;
+    align-items: center;
     list-style: none;
     gap: 40px;
     height: 100%;
-    color: var(--border);
 }
