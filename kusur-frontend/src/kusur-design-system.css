@@ -1,0 +1,192 @@
+/*
+  Kusur — Design System
+  ---------------------
+  Metaphor: a till receipt. Dark "till" chrome houses navigation;
+  content sits on a lighter "paper" surface, torn where the two meet.
+  Money owed to you reads in --credit, money you owe reads in --debit.
+
+  Fonts (Fraunces, IBM Plex Sans, IBM Plex Mono) are loaded in index.html.
+
+  Usage: imported once from styles.css, then use the tokens and
+  component classes below across components.
+*/
+
+/* ===================== TOKENS ===================== */
+/* Single dark theme, sampled from the UI mock. */
+:root{
+  /* till — chrome (nav, top bar, bottom bar): a step darker than the page */
+  --till:#121815;
+  --till-2:#222B27;
+  --till-ink:#EDEAE0;
+  --till-ink-dim:#B9B4A5;
+
+  /* paper — content surface */
+  --paper:#1B2320;
+  --paper-edge:#333B35;
+  --ink:#EDEAE0;
+  --ink-soft:#B9B4A5;
+
+  /* accent */
+  --copper:#C0923D;
+  --copper-deep:#8F6C2B;
+  --copper-ink:#16241F;
+
+  /* balance semantics */
+  --credit:#6FAE87;   /* owed to you */
+  --credit-bg:#1E2C26;
+  --debit:#D0623A;    /* you owe */
+  --debit-bg:#2E2019;
+
+  /* type */
+  --font-head: 'IBM Plex Sans', sans-serif;
+  --font-display: 'Fraunces', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* radius / motion */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-pill: 999px;
+  --ease: cubic-bezier(.4,0,.2,1);
+
+  color-scheme: dark;
+}
+/* ===================== BASE ===================== */
+*{box-sizing:border-box;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-head);
+  -webkit-font-smoothing:antialiased;
+  margin:0;
+}
+button{font-family:inherit;cursor:pointer;}
+:focus-visible{outline:2px solid var(--copper);outline-offset:2px;}
+h1,h2,h3{font-family:var(--font-display);font-weight:600;}
+
+/* monospace everywhere money appears, for tabular alignment */
+.money{font-family:var(--font-mono);font-weight:500;letter-spacing:-0.2px;}
+.money.credit{color:var(--credit);}
+.money.debit{color:var(--debit);}
+
+/* ===================== CHROME (till) ===================== */
+.sidebar{
+  display:flex;flex-direction:column;width:212px;flex-shrink:0;
+  background:var(--till);color:var(--till-ink);padding:20px 14px;
+}
+.topbar, .mobilebar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--till);color:var(--till-ink);padding:14px 22px;
+}
+.bottomnav{display:flex;background:var(--till);}
+
+.wordmark{display:flex;align-items:center;gap:8px;}
+.wordmark .text{font-weight:600;font-size:16.5px;letter-spacing:0.2px;}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:9px 10px;border-radius:var(--radius-sm);
+  font-size:13px;color:var(--till-ink-dim);background:none;border:none;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.nav-item svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6;}
+.nav-item.active{background:var(--till-2);color:var(--till-ink);}
+.nav-item.active svg{stroke:var(--copper);}
+
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:9px 0 8px;background:none;border:none;color:var(--till-ink-dim);font-size:10px;
+}
+.bn-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+.bn-item.active{color:var(--till-ink);}
+.bn-item.active svg{stroke:var(--copper);}
+
+/* the torn edge between till chrome and paper content */
+.tear{
+  height:11px;flex-shrink:0;background-color:var(--till);
+  background-image:
+    linear-gradient(135deg, var(--paper) 50%, transparent 50%),
+    linear-gradient(45deg, var(--paper) 50%, transparent 50%);
+  background-size:12px 12px;
+  background-position:0 0, 6px 0;
+  background-repeat:repeat-x;
+}
+
+/* ===================== CONTENT (paper) ===================== */
+.content{padding:16px 18px 88px;}
+
+.netcard{
+  border:1px solid var(--paper-edge);border-radius:var(--radius-sm);
+  padding:16px;
+}
+.netcard .label{font-size:11.5px;color:var(--ink-soft);margin-bottom:6px;}
+.netcard .big{font-family:var(--font-mono);font-weight:500;font-size:28px;letter-spacing:-0.5px;color:var(--credit);}
+.netcard .lines{margin-top:14px;padding-top:12px;border-top:1px solid var(--paper-edge);display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--ink-soft);}
+
+.section-title{font-size:12px;color:var(--ink-soft);margin:22px 0 6px;font-weight:500;}
+
+/* register rows — used for groups, expenses, balances, activity */
+.register{border-top:1px solid var(--paper-edge);}
+.row{
+  display:flex;align-items:center;gap:12px;padding:12px 2px;
+  border-bottom:1px solid var(--paper-edge);
+}
+.row .title{font-size:13.5px;font-weight:500;}
+.row .desc{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+.row .right{text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.row.is-settled .amt{opacity:.45;text-decoration:line-through;}
+
+.av{
+  width:29px;height:29px;border-radius:50%;flex-shrink:0;
+  background:var(--paper);border:1px solid var(--paper-edge);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:600;color:var(--ink-soft);
+}
+.av + .av{margin-left:-8px;}
+
+/* ===================== ACTIONS ===================== */
+.btn-primary{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--copper);color:var(--copper-ink);border:none;
+  border-radius:var(--radius-sm);padding:9px 14px;
+  font-size:13px;font-weight:600;
+  transition:filter .15s var(--ease);
+}
+.btn-primary:hover{filter:brightness(1.06);}
+
+.coin-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--copper);color:var(--copper-ink);
+  border:1px solid var(--copper-deep);border-radius:var(--radius-pill);
+  padding:5px 10px 5px 6px;font-size:11px;font-weight:600;
+}
+.coin-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.6;fill:none;}
+
+.fab{
+  position:fixed;bottom:18px;right:18px;z-index:5;
+  background:var(--copper);color:var(--copper-ink);border:none;
+  border-radius:var(--radius-pill);padding:12px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.22);
+}
+
+/* settle-up confirmation stamp — toggle with .is-settled on the row */
+.stamp{
+  display:none;font-family:var(--font-mono);font-size:10.5px;font-weight:600;
+  letter-spacing:0.5px;color:var(--credit);border:1.5px solid var(--credit);
+  border-radius:3px;padding:2px 7px;transform:rotate(-6deg);
+}
+.row.is-settled .stamp{display:inline-block;}
+.row.is-settled .coin-btn{display:none;}
+
+/* ===================== LAYOUT HELPERS ===================== */
+.grid2{display:grid;grid-template-columns:1fr;gap:22px;}
+
+/* breakpoints: apply to a container with container-type:inline-size,
+   e.g. .app{container-type:inline-size;} so nav/layout respond to
+   the component's own width, not just the viewport. */
+@container (min-width: 768px){
+  .grid2{grid-template-columns:1.7fr 1fr;gap:34px;align-items:start;}
+}
+@container (min-width: 1200px){
+  .content{max-width:1060px;}
+}

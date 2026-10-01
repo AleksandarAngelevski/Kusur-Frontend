@@ -1,32 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+/* Kusur design system: tokens, dark mode and shared component classes */
+@import './kusur-design-system.css';
 
-:root{
-    --paper-bg: #F2F1E9;
-    --deep-bottle: #16241F;
-    --coin-gold: #C0923D;
-    --ledger-green: #6fae87;
-    --brick-rust: #A6452F;
-    --card-surface: #FBFAF5;
-    --border: #DAD5C4;
-    --text-muted: #DAD5C4;
-    --divider-color: #333b35;
-}
 *{
-    box-sizing: border-box;
     margin: 0;
     padding: 0;
-}
-app-nav-bar-component{
-    position: absolute;
-    display: inline-block;
-    bottom:0;
-    width: 100%;
-    height: 50px;
-    background-color: var(--deep-bottle);
-    border-top: 1px solid var(--divider-color);
-    font-family: "Fraunces", serif;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
 }
