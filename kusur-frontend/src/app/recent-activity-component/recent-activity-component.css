@@ -1,0 +1,5 @@
+/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
+.section-title{
+    font-family: var(--font-head);
+    margin-top: 36px;
+}

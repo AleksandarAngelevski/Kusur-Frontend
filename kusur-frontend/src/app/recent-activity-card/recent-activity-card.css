@@ -1,0 +1,13 @@
+/* Row, title, desc and money styles come from the global design system. */
+:host{
+    display: block;
+}
+.mainContent{
+    flex: 1;
+    min-width: 0;
+}
+.amount{
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--ink-soft);
+}

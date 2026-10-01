@@ -1,0 +1,8 @@
+<h2 class="section-title">Recent Activity</h2>
+<div class="activities-container register">
+    @for (activity of activites(); track activity.id){
+        <app-recent-activity-card [activity]="activity"></app-recent-activity-card>
+    } @empty{
+        <p>No Activity yet.</p>
+    }
+</div>

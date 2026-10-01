@@ -1,0 +1,19 @@
+<div class="row">
+    <div class="mainContent">
+        <div class="title">
+            @if (actorIsOther()) {
+                <strong>{{ actor() }}</strong>
+            } @else {
+                {{ actor() }}
+            }
+            {{ rest() }}
+        </div>
+        <div class="desc">
+            @if (activity().groupName) {
+                {{ activity().groupName }} ·
+            }
+            {{ timeAgo() }}
+        </div>
+        <div class="amount money">{{ activity().amount | number:'1.0-0':'de-DE' }} ден</div>
+    </div>
+</div>
