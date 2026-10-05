@@ -6,6 +6,10 @@ import { netBalances } from '../shared/balances';
 /** The signed-in user's member id in the dummy data. */
 export const ME_ID = 1;
 
+/** A member's name, including people who have since left the group. */
+export const memberName = (group: GroupDetails, id: number): string =>
+    [...group.members, ...group.formerMembers].find((member) => member.id === id)?.name ?? 'Someone';
+
 /** Dummy-data helper: a Date the given number of days in the past. */
 const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
@@ -20,7 +24,9 @@ const seed = (): GroupDetails[] => {
         {
             id: 1,
             name: 'Ohrid Trip',
+            ownerId: you.id,
             members: [you, petar, marija, nikola],
+            formerMembers: [],
             expenses: [
                 { id: 1, description: 'Fuel and tolls', amount: 1600, date: daysAgo(3), paidById: you.id, splitBetweenIds: [1, 2, 3, 4] },
                 { id: 2, description: 'Boat tickets', amount: 800, date: daysAgo(2), paidById: petar.id, splitBetweenIds: [2, 3] },
@@ -30,7 +36,9 @@ const seed = (): GroupDetails[] => {
         {
             id: 2,
             name: 'Apartment',
+            ownerId: ana.id,
             members: [you, ana, nikola],
+            formerMembers: [],
             expenses: [
                 { id: 3, description: 'Rent', amount: 10500, date: daysAgo(5), paidById: ana.id, splitBetweenIds: [1, 4, 5] },
             ],
@@ -66,7 +74,7 @@ export class GroupsService {
     activity = computed<Activity[]>(() =>
         this.store()
             .flatMap((group) => {
-                const name = (id: number) => group.members.find((member) => member.id === id)?.name ?? 'Someone';
+                const name = (id: number) => memberName(group, id);
                 return [
                     ...group.expenses.map((expense): Activity => ({
                         id: expense.id,
@@ -93,12 +101,14 @@ export class GroupsService {
         return this.store().find((group) => group.id === id);
     }
 
-    /** The creator is the group's first member. */
+    /** The creator owns the group and is its first member. */
     createGroup(name: string): GroupDetails {
         const group: GroupDetails = {
             id: this.nextId++,
             name: name.trim(),
+            ownerId: ME_ID,
             members: [{ id: ME_ID, name: 'You' }],
+            formerMembers: [],
             expenses: [],
             settlements: [],
         };
@@ -114,6 +124,45 @@ export class GroupsService {
             return false;
         }
         this.change(groupId, (g) => ({ ...g, members: [...g.members, { id: this.nextId++, name: trimmed }] }));
+        return true;
+    }
+
+    renameGroup(groupId: number, name: string): void {
+        this.change(groupId, (g) => ({ ...g, name: name.trim() }));
+    }
+
+    deleteGroup(groupId: number): void {
+        this.store.update((groups) => groups.filter((group) => group.id !== groupId));
+    }
+
+    /**
+     * Removes a member who is settled up, keeping their name for the history.
+     * Returns false, and removes nobody, for the owner or for anyone who still owes or is owed money.
+     */
+    removeMember(groupId: number, memberId: number): boolean {
+        const group = this.group(groupId);
+        const member = group?.members.find((m) => m.id === memberId);
+        if (!group || !member || memberId === group.ownerId || (netBalances(group).get(memberId) ?? 0) !== 0) {
+            return false;
+        }
+        this.change(groupId, (g) => ({
+            ...g,
+            members: g.members.filter((m) => m.id !== memberId),
+            formerMembers: [...g.formerMembers, member],
+        }));
+        return true;
+    }
+
+    /**
+     * Takes me out of a group, which drops it from my list. Returns false when I own it
+     * (delete it instead) or am not settled up.
+     */
+    leaveGroup(groupId: number): boolean {
+        const group = this.group(groupId);
+        if (!group || group.ownerId === ME_ID || (netBalances(group).get(ME_ID) ?? 0) !== 0) {
+            return false;
+        }
+        this.deleteGroup(groupId);
         return true;
     }
 

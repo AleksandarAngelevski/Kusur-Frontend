@@ -1,0 +1,80 @@
+@if (group(); as group) {
+    <a class="back" [routerLink]="['/groups', group.id]">‹ {{ group.name }}</a>
+
+    <h1>Group settings</h1>
+
+    @if (isOwner()) {
+        <form [formGroup]="renameForm" (ngSubmit)="rename()">
+            <div class="field">
+                <label for="name">Group name</label>
+                <input id="name" type="text" formControlName="name" autocomplete="off"
+                    [attr.aria-invalid]="nameError() ? 'true' : null"
+                    [attr.aria-describedby]="nameError() ? 'name-error' : null" />
+                @if (nameError()) {
+                    <p class="field-error" id="name-error">{{ nameError() }}</p>
+                }
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" type="submit">Save name</button>
+                @if (renamed()) {
+                    <span class="saved" role="status">Saved.</span>
+                }
+            </div>
+        </form>
+    } @else {
+        <p class="lead">Only the owner, {{ ownerName() }}, can rename or delete this group or remove members.</p>
+    }
+
+    <h2 class="section-title">Members</h2>
+    <div class="register">
+        @for (member of members(); track member.id) {
+            <div class="row">
+                <div class="av"><span class="initials">{{ initials(member.name) }}</span></div>
+                <div class="mainContent">
+                    <div class="title">{{ member.name }}</div>
+                    @if (member.isOwner) {
+                        <div class="desc">Owner</div>
+                    }
+                </div>
+                @if (isOwner() && !member.isOwner) {
+                    <div class="right">
+                        @if (member.settled) {
+                            <button class="btn-link danger" type="button" (click)="removeMember(member.id)"
+                                [attr.aria-label]="'Remove ' + member.name">Remove</button>
+                        } @else {
+                            <span class="caption">Settle up before removing</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="danger-zone">
+        @if (isOwner()) {
+            @if (confirming() === 'delete') {
+                <p role="alert">Delete {{ group.name }}? Its expenses and history go with it, for everyone.</p>
+                <div class="form-actions">
+                    <button class="btn-danger" type="button" (click)="deleteGroup()">Yes, delete it</button>
+                    <button class="btn-link" type="button" (click)="confirming.set(null)">Keep it</button>
+                </div>
+            } @else {
+                <button class="btn-link danger" type="button" (click)="confirming.set('delete')">Delete group</button>
+            }
+        } @else if (!iAmSettled()) {
+            <p>Settle your balance in this group before you leave it.</p>
+        } @else if (confirming() === 'leave') {
+            <p role="alert">Leave {{ group.name }}? You will need to be added again to come back.</p>
+            <div class="form-actions">
+                <button class="btn-danger" type="button" (click)="leaveGroup()">Yes, leave</button>
+                <button class="btn-link" type="button" (click)="confirming.set(null)">Stay</button>
+            </div>
+        } @else {
+            <button class="btn-link danger" type="button" (click)="confirming.set('leave')">Leave group</button>
+        }
+    </div>
+} @else {
+    <a class="back" routerLink="/groups">‹ Groups</a>
+    <h1>Group not found</h1>
+    <p class="lead">It may have been deleted, or the link is wrong.</p>
+}

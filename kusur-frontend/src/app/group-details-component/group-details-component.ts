@@ -3,7 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { GroupsService, ME_ID } from '../services/groups.service';
+import { GroupsService, ME_ID, memberName } from '../services/groups.service';
 import { expenseShares, netBalances, simplifyDebts } from '../shared/balances';
 import { initials } from '../shared/initials';
 
@@ -106,6 +106,7 @@ export class GroupDetailsComponent {
     /** "You" for the signed-in user (or the given wording mid-sentence), the member's name otherwise. */
     private name(id: number, me = 'You'): string {
         if (id === ME_ID) return me;
-        return this.group()?.members.find((member) => member.id === id)?.name ?? 'Someone';
+        const group = this.group();
+        return group ? memberName(group, id) : 'Someone';
     }
 }

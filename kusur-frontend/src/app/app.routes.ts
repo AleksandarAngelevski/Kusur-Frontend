@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { ExpenseFormComponent } from './expense-form-component/expense-form-component';
 import { CreateGroupComponent } from './create-group-component/create-group-component';
 import { GroupDetailsComponent } from './group-details-component/group-details-component';
+import { GroupSettingsComponent } from './group-settings-component/group-settings-component';
 import { HomeComponent } from './home-component/home-component';
 import { LoginComponent } from './login-component/login-component';
 import { ForgotPasswordComponent } from './forgot-password-component/forgot-password-component';
@@ -47,6 +48,10 @@ export const routes: Routes = [
             {
                 path: 'groups/:id/expenses/:expenseId/edit',
                 component: ExpenseFormComponent
+            },
+            {
+                path: 'groups/:id/settings',
+                component: GroupSettingsComponent
             },
             {
                 path: 'groups/:id/settle',

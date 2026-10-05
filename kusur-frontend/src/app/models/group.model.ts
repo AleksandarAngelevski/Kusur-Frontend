@@ -39,7 +39,11 @@ export interface GroupDetails{
     id: number;
     name: string;
     imageUrl?: string;
+    /** the member who may rename or delete the group and remove others */
+    ownerId: number;
     members: Member[];
+    /** people who left or were removed; kept so the history can still name them */
+    formerMembers: Member[];
     expenses: Expense[];
     settlements: Settlement[];
 }

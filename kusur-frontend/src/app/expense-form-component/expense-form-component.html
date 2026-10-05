@@ -39,7 +39,7 @@
         <div class="field">
             <label for="paidById">Paid by</label>
             <select id="paidById" formControlName="paidById">
-                @for (member of group.members; track member.id) {
+                @for (member of people(); track member.id) {
                     <option [ngValue]="member.id">{{ member.name }}</option>
                 }
             </select>
@@ -57,7 +57,7 @@
                 </label>
             </div>
             @if (splitMode() === 'equal') {
-                @for (member of group.members; track member.id) {
+                @for (member of people(); track member.id) {
                     <label class="check">
                         <input type="checkbox" [checked]="splitBetween().has(member.id)" (change)="toggle(member.id)" />
                         {{ member.name }}
@@ -74,7 +74,7 @@
                     </p>
                 }
             } @else {
-                @for (member of group.members; track member.id) {
+                @for (member of people(); track member.id) {
                     <div class="share">
                         <label [for]="'share-' + member.id">{{ member.name }}</label>
                         <input [id]="'share-' + member.id" type="number" inputmode="numeric" min="0" step="1" placeholder="0"

@@ -26,6 +26,7 @@ describe('GroupsService', () => {
 
         expect(group.name).toBe('Ski weekend');
         expect(group.members).toEqual([{ id: ME_ID, name: 'You' }]);
+        expect(group.ownerId).toBe(ME_ID);
         expect(summary(group.id)).toEqual({ id: group.id, name: 'Ski weekend', imageUrl: undefined, memberCount: 1, balance: 0 });
     });
 
@@ -66,6 +67,29 @@ describe('GroupsService', () => {
         service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800, date: new Date() });
 
         expect(service.activity()[0]).toMatchObject({ activity: 'Marija settled up', groupName: 'Ohrid Trip', amount: 800 });
+    });
+
+    it('should refuse to remove the owner or anyone who is not settled up', () => {
+        expect(service.removeMember(1, ME_ID)).toBe(false);
+        expect(service.removeMember(1, 3)).toBe(false);
+        expect(service.group(1)!.members.length).toBe(4);
+    });
+
+    it('should refuse to let me leave a group I own or owe money in', () => {
+        expect(service.leaveGroup(1)).toBe(false);
+        expect(service.leaveGroup(2)).toBe(false);
+        expect(service.groups().length).toBe(2);
+    });
+
+    it('should update and delete an expense in place', () => {
+        const [fuel] = service.group(1)!.expenses;
+
+        service.updateExpense(1, fuel.id, { ...fuel, amount: 2000 });
+        expect(summary(1).balance).toBe(1500);
+
+        service.deleteExpense(1, fuel.id);
+        expect(summary(1).balance).toBe(0);
+        expect(service.group(1)!.expenses.map((expense) => expense.description)).toEqual(['Boat tickets']);
     });
 
     it('should leave other groups alone', () => {

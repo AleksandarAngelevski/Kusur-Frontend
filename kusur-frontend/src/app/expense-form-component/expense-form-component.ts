@@ -35,6 +35,14 @@ export class ExpenseFormComponent {
     private expenseId = this.params.has('expenseId') ? Number(this.params.get('expenseId')) : null;
     private original = this.group()?.expenses.find((expense) => expense.id === this.expenseId);
 
+    /** current members, plus anyone who has left but paid for or shares the expense being edited */
+    people = computed(() => {
+        const group = this.group();
+        if (!group) return [];
+        const involved = new Set([this.original?.paidById, ...(this.original?.splitBetweenIds ?? [])]);
+        return [...group.members, ...group.formerMembers.filter((member) => involved.has(member.id))];
+    });
+
     isEdit = this.expenseId !== null;
     notFound = !this.group() || (this.isEdit && !this.original);
 

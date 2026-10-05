@@ -80,10 +80,11 @@ describe('GroupDetailsComponent', () => {
             ]);
         });
 
-        it('should link to add expense and settle up', () => {
+        it('should link to add expense, settle up and settings', () => {
             expect(Array.from(el.querySelectorAll('.actions a')).map((a) => a.getAttribute('href'))).toEqual([
                 '/groups/1/expenses/new',
                 '/groups/1/settle',
+                '/groups/1/settings',
             ]);
         });
 
