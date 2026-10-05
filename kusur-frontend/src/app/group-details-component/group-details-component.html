@@ -101,6 +101,18 @@
                 <a class="row" [routerLink]="entry.link"><ng-container [ngTemplateOutlet]="content" /></a>
             } @else {
                 <div class="row"><ng-container [ngTemplateOutlet]="content" /></div>
+                @if (entry.settlementId; as settlementId) {
+                    <div class="undo">
+                        @if (confirmingUndo() === settlementId) {
+                            <span role="alert">Undo this payment? The balances go back to what they were.</span>
+                            <button class="btn-link danger" type="button" (click)="undoSettlement(settlementId)">Yes, undo it</button>
+                            <button class="btn-link" type="button" (click)="confirmingUndo.set(null)">Keep it</button>
+                        } @else {
+                            <button class="btn-link" type="button" (click)="confirmingUndo.set(settlementId)"
+                                [attr.aria-label]="'Undo payment: ' + entry.title">Undo</button>
+                        }
+                    </div>
+                }
             }
         } @empty {
             <p class="empty">No expenses yet. Add the first one.</p>

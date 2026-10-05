@@ -97,6 +97,44 @@ describe('GroupDetailsComponent', () => {
             expect(rows('History')[0]).toContain('Marija paid you Settlement');
         });
 
+        describe('with a recorded settlement', () => {
+            const click = async (text: string) => {
+                Array.from(el.querySelectorAll('.undo button')).find((button) => button.textContent!.trim() === text)!
+                    .dispatchEvent(new Event('click'));
+                await fixture.whenStable();
+            };
+
+            beforeEach(async () => {
+                TestBed.inject(GroupsService).addSettlement(1, { fromId: 3, toId: 1, amount: 800, date: new Date() });
+                await fixture.whenStable();
+            });
+
+            it('should offer Undo on the settlement only', () => {
+                expect(text('.undo button')).toEqual(['Undo']);
+                expect(el.querySelectorAll('a.row').length).toBe(2);
+            });
+
+            it('should keep the settlement when the undo is cancelled', async () => {
+                await click('Undo');
+                expect(text('.undo button')).toEqual(['Yes, undo it', 'Keep it']);
+                expect(text('.netcard .big')).toEqual(['+400 ден']);
+
+                await click('Keep it');
+                expect(text('.undo button')).toEqual(['Undo']);
+                expect(TestBed.inject(GroupsService).group(1)!.settlements.length).toBe(1);
+            });
+
+            it('should remove the settlement and restore the balances on the second click', async () => {
+                await click('Undo');
+                await click('Yes, undo it');
+
+                expect(TestBed.inject(GroupsService).group(1)!.settlements).toEqual([]);
+                expect(text('.netcard .big')).toEqual(['+1.200 ден']);
+                expect(rows('Who pays whom')).toEqual(['Marija pays you 800 ден', 'Nikola pays you 400 ден']);
+                expect(el.querySelector('.undo')).toBeNull();
+            });
+        });
+
         it('should add a member and clear the field', async () => {
             await addMember('Ana');
 

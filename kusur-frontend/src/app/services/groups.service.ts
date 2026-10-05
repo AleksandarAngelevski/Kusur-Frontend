@@ -185,6 +185,11 @@ export class GroupsService {
         this.change(groupId, (g) => ({ ...g, settlements: [...g.settlements, { ...settlement, id: this.nextId++ }] }));
     }
 
+    /** Takes a recorded payment back out, which restores the balances from before it. */
+    deleteSettlement(groupId: number, settlementId: number): void {
+        this.change(groupId, (g) => ({ ...g, settlements: g.settlements.filter((settlement) => settlement.id !== settlementId) }));
+    }
+
     private change(groupId: number, apply: (group: GroupDetails) => GroupDetails): void {
         this.store.update((groups) => groups.map((group) => (group.id === groupId ? apply(group) : group)));
     }

@@ -92,6 +92,17 @@ describe('GroupsService', () => {
         expect(service.group(1)!.expenses.map((expense) => expense.description)).toEqual(['Boat tickets']);
     });
 
+    it('should restore the balance when a settlement is undone', () => {
+        service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800, date: new Date() });
+        const [settlement] = service.group(1)!.settlements;
+
+        service.deleteSettlement(1, settlement.id);
+
+        expect(summary(1).balance).toBe(1200);
+        expect(service.group(1)!.settlements).toEqual([]);
+        expect(service.activity().some((entry) => entry.activity === 'Marija settled up')).toBe(false);
+    });
+
     it('should leave other groups alone', () => {
         service.addExpense(1, { description: 'Dinner', amount: 400, date: new Date(), paidById: ME_ID, splitBetweenIds: [ME_ID] });
 

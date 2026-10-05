@@ -18,6 +18,8 @@ interface HistoryEntry {
     myShare?: number;
     /** where the row leads; expenses open their edit page */
     link?: (string | number)[];
+    /** set on settlements, which can be undone from their row */
+    settlementId?: number;
 }
 
 @Component({
@@ -76,12 +78,22 @@ export class GroupDetailsComponent {
             title: `${this.name(settlement.fromId)} paid ${this.name(settlement.toId, 'you')}`,
             detail: 'Settlement',
             amount: settlement.amount,
+            settlementId: settlement.id,
         }));
 
         return [...expenses, ...settlements].sort(
             (a, b) => b.date.getTime() - a.date.getTime() || b.key.localeCompare(a.key)
         );
     });
+
+    /** the settlement whose Undo is waiting for its second click */
+    confirmingUndo = signal<number | null>(null);
+
+    undoSettlement(settlementId: number){
+        const group = this.group();
+        if (group) this.groups.deleteSettlement(group.id, settlementId);
+        this.confirmingUndo.set(null);
+    }
 
     memberForm = new FormGroup({ name: new FormControl('', { nonNullable: true }) });
     memberError = signal('');
