@@ -8,6 +8,9 @@ import { AdminApi } from './admin.api';
 import { AuthService } from './auth.service';
 import { CurrentUser, GroupsApi, NewExpense, NewSettlement } from './groups.api';
 
+/** how long after a fetch refresh() stays quiet, so quick page changes don't each hit the backend */
+export const REFRESH_MIN_INTERVAL_MS = 5_000;
+
 /** A member's name, including people who have since left the group. */
 export const memberName = (group: GroupDetails, id: number): string =>
     [...group.members, ...group.formerMembers].find((member) => member.id === id)?.name ?? 'Someone';
@@ -31,6 +34,8 @@ export class GroupsService {
     private adminStore = signal<GroupDetails[]>([]);
     private me = signal<CurrentUser | null>(null);
     private loaded = false;
+    private lastFetchedAt = 0;
+    private refreshing = false;
 
     /** set when the groups could not be fetched; the shell shows it with a retry */
     loadError = signal('');
@@ -104,6 +109,7 @@ export class GroupsService {
                 this.me.set(me);
                 this.store.set(groups.map((group) => this.adopt(group)));
                 this.loaded = true;
+                this.lastFetchedAt = Date.now();
             }),
             map(() => undefined),
             catchError((err) => {
@@ -111,6 +117,27 @@ export class GroupsService {
                 return of(undefined);
             })
         );
+    }
+
+    /**
+     * Quietly refetches my groups, so that what other members added or changed shows up without
+     * a page reload. The shell calls it on every page change and when the tab comes back into view.
+     * Does nothing before the first load, while a refresh is running, or within a few seconds of
+     * the last fetch; if it fails, the copy already here stays.
+     */
+    refresh(): void {
+        if (!this.loaded || this.refreshing || Date.now() - this.lastFetchedAt < REFRESH_MIN_INTERVAL_MS) {
+            return;
+        }
+        this.refreshing = true;
+        this.api.list().subscribe({
+            next: (groups) => {
+                this.store.set(groups.map((group) => this.adopt(group)));
+                this.lastFetchedAt = Date.now();
+                this.refreshing = false;
+            },
+            error: () => (this.refreshing = false),
+        });
     }
 
     /**

@@ -1,4 +1,5 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { GroupDetails } from '../models/group.model';
@@ -6,7 +7,7 @@ import { loadFakeGroups, ME_ID, provideFakeGroupsApi } from '../testing/fake-gro
 import { AdminApi } from './admin.api';
 import { AuthService } from './auth.service';
 import { GroupsApi } from './groups.api';
-import { GroupsService } from './groups.service';
+import { GroupsService, REFRESH_MIN_INTERVAL_MS } from './groups.service';
 
 describe('GroupsService', () => {
     let service: GroupsService;
@@ -14,7 +15,7 @@ describe('GroupsService', () => {
     const summary = (id: number) => service.groups().find((group) => group.id === id)!;
 
     beforeEach(() => {
-        TestBed.configureTestingModule({ providers: [provideFakeGroupsApi()] });
+        TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideFakeGroupsApi()] });
         service = loadFakeGroups();
     });
 
@@ -124,6 +125,59 @@ describe('GroupsService', () => {
         TestBed.inject(AuthService).logout();
         TestBed.tick();
         expect(service.allGroups()).toEqual([]);
+    });
+
+    describe('refresh', () => {
+        /** what another member did while I was looking at something else */
+        const someoneElseAddsAnExpense = () =>
+            TestBed.inject(GroupsApi)
+                .addExpense(1, { description: 'Taxi', amount: 300, date: new Date(), paidById: 2, splitBetweenIds: [ME_ID, 2] })
+                .subscribe();
+
+        const later = (ms: number) => vi.spyOn(Date, 'now').mockReturnValue(Date.now() + ms);
+
+        it('should pick up what other members changed', () => {
+            someoneElseAddsAnExpense();
+            expect(summary(1).balance).toBe(1200);
+
+            later(REFRESH_MIN_INTERVAL_MS);
+            service.refresh();
+
+            expect(summary(1).balance).toBe(1050);
+            expect(service.group(1)!.members[0].name).toBe('You');
+        });
+
+        it('should stay quiet right after a fetch', () => {
+            const list = vi.spyOn(TestBed.inject(GroupsApi), 'list');
+
+            service.refresh();
+            expect(list).not.toHaveBeenCalled();
+
+            later(REFRESH_MIN_INTERVAL_MS);
+            service.refresh();
+            service.refresh();
+            expect(list).toHaveBeenCalledTimes(1);
+        });
+
+        it('should keep what it has when the refetch fails', () => {
+            vi.spyOn(TestBed.inject(GroupsApi), 'list').mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 502 })));
+            later(REFRESH_MIN_INTERVAL_MS);
+
+            service.refresh();
+
+            expect(service.groups().length).toBe(2);
+            expect(service.loadError()).toBe('');
+        });
+
+        it('should do nothing before the groups have loaded', () => {
+            TestBed.inject(AuthService).logout();
+            TestBed.tick();
+            const list = vi.spyOn(TestBed.inject(GroupsApi), 'list');
+
+            service.refresh();
+
+            expect(list).not.toHaveBeenCalled();
+        });
     });
 
     it('should only fetch once, until someone signs out', () => {
