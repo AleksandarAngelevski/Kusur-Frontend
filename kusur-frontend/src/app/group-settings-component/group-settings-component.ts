@@ -52,6 +52,9 @@ export class GroupSettingsComponent {
     /** which destructive action is waiting for its second click */
     confirming = signal<'delete' | 'leave' | null>(null);
 
+    /** the member whose "Make owner" is waiting for its second click */
+    confirmingOwner = signal<number | null>(null);
+
     /** why the last change was refused, from the backend */
     errorMessage = signal('');
 
@@ -67,6 +70,11 @@ export class GroupSettingsComponent {
     nameError(): string {
         const name = this.renameForm.controls.name;
         return name.touched && name.invalid ? 'Give the group a name.' : '';
+    }
+
+    /** Hands the group to this member; the page then shows me what an ordinary member sees. */
+    makeOwner(memberId: number){
+        this.groups.transferOwnership(this.groupId, memberId).subscribe(this.report(() => this.confirmingOwner.set(null)));
     }
 
     removeMember(memberId: number){
@@ -88,6 +96,7 @@ export class GroupSettingsComponent {
             next: () => then(),
             error: (err: unknown) => {
                 this.confirming.set(null);
+                this.confirmingOwner.set(null);
                 this.errorMessage.set(apiErrorMessage(err));
             }
         };

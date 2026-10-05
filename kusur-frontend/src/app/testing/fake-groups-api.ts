@@ -82,6 +82,13 @@ export class FakeGroupsApi implements Pick<GroupsApi, keyof GroupsApi> {
         return this.change(groupId, (group) => ({ ...group, name }));
     }
 
+    transferOwnership(groupId: number, ownerId: number): Observable<GroupDetails> {
+        if (!this.find(groupId).members.some((member) => member.id === ownerId)) {
+            return fail(400, 'The new owner must be a member of this group.');
+        }
+        return this.change(groupId, (group) => ({ ...group, ownerId }));
+    }
+
     remove(groupId: number): Observable<void> {
         this.groups = this.groups.filter((group) => group.id !== groupId);
         return of(undefined);

@@ -78,9 +78,9 @@ describe('GroupSettingsComponent', () => {
         it('should offer to remove only members who are settled up, and never the owner', () => {
             expect(memberRows()).toEqual([
                 'You | Owner',
-                'Petar | Remove',
-                'Marija | Settle up before removing',
-                'Nikola | Settle up before removing',
+                'Petar | Make owner | Remove',
+                'Marija | Make owner | Settle up before removing',
+                'Nikola | Make owner | Settle up before removing',
             ]);
         });
 
@@ -91,6 +91,22 @@ describe('GroupSettingsComponent', () => {
             expect(group.members.map((member) => member.name)).toEqual(['You', 'Marija', 'Nikola']);
             expect(group.formerMembers.map((member) => member.name)).toEqual(['Petar']);
             expect(groups.activity().some((entry) => entry.activity === 'Petar added Boat tickets')).toBe(true);
+        });
+
+        it('should hand the group to a member after a second click, leaving me an ordinary member', async () => {
+            await click('Make owner', 1);
+            expect(groups.group(1)!.ownerId).toBe(1);
+            expect(memberRows()[2]).toBe('Marija | Hand the group to Marija? You stay a member. | Yes, make owner | Cancel');
+
+            await click('Cancel');
+            await click('Make owner', 1);
+            await click('Yes, make owner');
+
+            expect(groups.group(1)!.ownerId).toBe(3);
+            expect(memberRows()).toEqual(['You', 'Petar', 'Marija | Owner', 'Nikola']);
+            expect(el.querySelector('.lead')!.textContent).toContain('Only the owner, Marija,');
+            expect(el.querySelector('form')).toBeNull();
+            expect(buttons()).toEqual([]);
         });
 
         it('should only delete the group after a second click', async () => {

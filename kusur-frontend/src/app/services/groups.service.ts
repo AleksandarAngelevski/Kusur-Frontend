@@ -122,6 +122,11 @@ export class GroupsService {
         return this.replace(this.api.rename(groupId, name.trim()));
     }
 
+    /** Hands the group to another member. Afterwards I am an ordinary member of it. */
+    transferOwnership(groupId: number, ownerId: number): Observable<GroupDetails> {
+        return this.replace(this.api.transferOwnership(groupId, ownerId));
+    }
+
     deleteGroup(groupId: number): Observable<void> {
         return this.api.remove(groupId).pipe(tap(() => this.forget(groupId)));
     }

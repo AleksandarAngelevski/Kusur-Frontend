@@ -20,3 +20,14 @@
     font-size: 13px;
     color: var(--credit);
 }
+.right{
+    gap: 4px;
+}
+.choices{
+    display: flex;
+    gap: 12px;
+}
+.row .btn-link{
+    text-decoration: underline;
+    white-space: nowrap;
+}

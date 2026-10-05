@@ -67,6 +67,7 @@ describe('GroupsApi', () => {
             ['GET', '/api/users/me', null, () => api.me().subscribe()],
             ['POST', '/api/groups', { name: 'Ski' }, () => api.create('Ski').subscribe()],
             ['PATCH', '/api/groups/7', { name: 'Ski' }, () => api.rename(7, 'Ski').subscribe()],
+            ['PUT', '/api/groups/7/owner', { ownerId: 3 }, () => api.transferOwnership(7, 3).subscribe()],
             ['DELETE', '/api/groups/7', null, () => api.remove(7).subscribe()],
             ['POST', '/api/groups/7/members', { identifier: 'petar' }, () => api.addMember(7, 'petar').subscribe()],
             ['DELETE', '/api/groups/7/members/3', null, () => api.removeMember(7, 3).subscribe()],

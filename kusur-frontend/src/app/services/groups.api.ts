@@ -70,6 +70,11 @@ export class GroupsApi {
         return this.http.patch<GroupWire>(`/api/groups/${groupId}`, { name }).pipe(map(fromWire));
     }
 
+    /** hands the group to another of its members; only the current owner may */
+    transferOwnership(groupId: number, ownerId: Member['id']): Observable<GroupDetails> {
+        return this.http.put<GroupWire>(`/api/groups/${groupId}/owner`, { ownerId }).pipe(map(fromWire));
+    }
+
     remove(groupId: number): Observable<void> {
         return this.http.delete<void>(`/api/groups/${groupId}`);
     }

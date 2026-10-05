@@ -38,11 +38,21 @@
                 </div>
                 @if (isOwner() && !member.isOwner) {
                     <div class="right">
-                        @if (member.settled) {
-                            <button class="btn-link danger" type="button" (click)="removeMember(member.id)"
-                                [attr.aria-label]="'Remove ' + member.name">Remove</button>
+                        @if (confirmingOwner() === member.id) {
+                            <span class="caption" role="alert">Hand the group to {{ member.name }}? You stay a member.</span>
+                            <span class="choices">
+                                <button class="btn-link" type="button" (click)="makeOwner(member.id)">Yes, make owner</button>
+                                <button class="btn-link" type="button" (click)="confirmingOwner.set(null)">Cancel</button>
+                            </span>
                         } @else {
-                            <span class="caption">Settle up before removing</span>
+                            <button class="btn-link" type="button" (click)="confirmingOwner.set(member.id)"
+                                [attr.aria-label]="'Make ' + member.name + ' the owner'">Make owner</button>
+                            @if (member.settled) {
+                                <button class="btn-link danger" type="button" (click)="removeMember(member.id)"
+                                    [attr.aria-label]="'Remove ' + member.name">Remove</button>
+                            } @else {
+                                <span class="caption">Settle up before removing</span>
+                            }
                         }
                     </div>
                 }
