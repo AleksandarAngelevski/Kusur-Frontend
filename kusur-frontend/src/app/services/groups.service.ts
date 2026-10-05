@@ -1,4 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
+import { Activity } from '../models/activity.model';
 import { Expense, Group, GroupDetails, Member, Settlement } from '../models/group.model';
 import { netBalances } from '../shared/balances';
 
@@ -59,6 +60,32 @@ export class GroupsService {
             memberCount: group.members.length,
             balance: netBalances(group).get(ME_ID) ?? 0,
         }))
+    );
+
+    /** Every expense and settlement across my groups, newest first, for the activity feed. */
+    activity = computed<Activity[]>(() =>
+        this.store()
+            .flatMap((group) => {
+                const name = (id: number) => group.members.find((member) => member.id === id)?.name ?? 'Someone';
+                return [
+                    ...group.expenses.map((expense): Activity => ({
+                        id: expense.id,
+                        // nobody records who typed an expense in, so it is credited to whoever paid
+                        activity: `${name(expense.paidById)} added ${expense.description}`,
+                        groupName: group.name,
+                        timestamp: expense.date,
+                        amount: expense.amount,
+                    })),
+                    ...group.settlements.map((settlement): Activity => ({
+                        id: settlement.id,
+                        activity: `${name(settlement.fromId)} settled up`,
+                        groupName: group.name,
+                        timestamp: settlement.date,
+                        amount: settlement.amount,
+                    })),
+                ];
+            })
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime() || b.id - a.id)
     );
 
     /** Reads the store, so it stays reactive when called inside a computed or a template. */

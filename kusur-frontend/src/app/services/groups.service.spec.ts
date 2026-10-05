@@ -54,6 +54,20 @@ describe('GroupsService', () => {
         expect(summary(1).balance).toBe(800);
     });
 
+    it('should list activity across groups, newest first', () => {
+        expect(service.activity().map((entry) => [entry.activity, entry.groupName, entry.amount])).toEqual([
+            ['Petar added Boat tickets', 'Ohrid Trip', 800],
+            ['You added Fuel and tolls', 'Ohrid Trip', 1600],
+            ['Ana added Rent', 'Apartment', 10500],
+        ]);
+    });
+
+    it('should put a new settlement at the top of the activity', () => {
+        service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800, date: new Date() });
+
+        expect(service.activity()[0]).toMatchObject({ activity: 'Marija settled up', groupName: 'Ohrid Trip', amount: 800 });
+    });
+
     it('should leave other groups alone', () => {
         service.addExpense(1, { description: 'Dinner', amount: 400, date: new Date(), paidById: ME_ID, splitBetweenIds: [ME_ID] });
 
