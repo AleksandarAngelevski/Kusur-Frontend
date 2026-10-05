@@ -53,7 +53,8 @@ export class LoginComponent {
 
     private messageFor(err: HttpErrorResponse): string {
         if (err.status === 401 || err.status === 403) return 'Wrong email or password.';
-        if (err.status === 0) return "Can't reach the server. Try again in a moment.";
+        // 0 is a failed request; 502-504 is what a proxy answers when the backend behind it is down
+        if ([0, 502, 503, 504].includes(err.status)) return "Can't reach the server. Try again in a moment.";
         return 'Something went wrong. Please try again.';
     }
 }

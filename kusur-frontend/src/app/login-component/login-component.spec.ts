@@ -115,4 +115,31 @@ describe('LoginComponent', () => {
 
         expect(el.querySelector('.error')?.textContent).toContain('Wrong email or password.');
     });
+
+    it.each([0, 502, 503, 504])('should say the server is unreachable on status %i', async (status) => {
+        await type('email', 'ace@example.com');
+        await type('password', 'secret');
+        await submit();
+
+        const req = http.expectOne('/api/auth/login');
+        if (status === 0) {
+            req.error(new ProgressEvent('error'));
+        } else {
+            req.flush('', { status, statusText: 'Bad Gateway' });
+        }
+        await fixture.whenStable();
+
+        expect(el.querySelector('.error')?.textContent).toContain("Can't reach the server.");
+    });
+
+    it('should show the generic message on other server errors', async () => {
+        await type('email', 'ace@example.com');
+        await type('password', 'secret');
+        await submit();
+
+        http.expectOne('/api/auth/login').flush('', { status: 500, statusText: 'Server Error' });
+        await fixture.whenStable();
+
+        expect(el.querySelector('.error')?.textContent).toContain('Something went wrong.');
+    });
 });
