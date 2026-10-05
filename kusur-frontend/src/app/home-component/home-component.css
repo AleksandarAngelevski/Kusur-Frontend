@@ -1,6 +1,7 @@
+/* printed at the top of the receipt, like the date line a till adds */
 .currentDate{
-    color: var(--ink-soft);
     font-family: var(--font-mono);
-    font-weight: 500;
-    font-size: 15px;
+    font-stretch: 75%;
+    font-size: 13px;
+    color: var(--ink-soft);
 }

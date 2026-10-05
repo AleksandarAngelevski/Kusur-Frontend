@@ -1,19 +1,11 @@
 /* Form controls and the danger zone come from shared/app-form.css; rows and avatars from the design system. */
 
-/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
-.section-title{
-    font-family: var(--font-head);
-    margin-top: 32px;
-}
-.register{
-    max-width: 420px;
-}
 .mainContent{
     flex: 1;
     min-width: 0;
 }
 .caption{
-    font-size: 10.5px;
+    font-size: 12px;
     color: var(--ink-soft);
 }
 .saved{

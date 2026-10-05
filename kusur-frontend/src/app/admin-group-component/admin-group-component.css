@@ -10,10 +10,10 @@
 }
 
 .group-header{
-    margin-top: 14px;
+    margin-top: 12px;
 }
 .group-header h1{
-    font-size: 24px;
+    font-size: 26px;
 }
 .group-header p{
     margin-top: 2px;
@@ -21,11 +21,6 @@
     color: var(--ink-soft);
 }
 
-/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
-.section-title{
-    font-family: var(--font-head);
-    margin-top: 32px;
-}
 
 a.row{
     color: inherit;
@@ -42,10 +37,10 @@ a.row:hover .title{
     gap: 2px;
 }
 .money{
-    font-size: 13px;
+    font-size: 14.5px;
 }
 .caption{
-    font-size: 10.5px;
+    font-size: 12px;
     color: var(--ink-soft);
     text-decoration: underline;
 }
@@ -67,16 +62,16 @@ a.row:hover .title{
 .btn-secondary{
     display: inline-flex;
     align-items: center;
-    background: none;
+    background: var(--paper-raised);
     color: var(--ink);
-    border: 1px solid var(--paper-edge);
+    border: 1px solid var(--ink-soft);
     border-radius: var(--radius-sm);
     padding: 8px 14px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
 }
 .btn-secondary:hover{
-    border-color: var(--ink-soft);
+    border-color: var(--ink);
 }
 .choices{
     display: flex;

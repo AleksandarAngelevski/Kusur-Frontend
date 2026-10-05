@@ -1,4 +1,4 @@
-/* leave room so the fixed bottom nav doesn't cover the end of the page */
+/* The page shell and the sign-in cards do their own spacing; nothing to add here. */
 .page-content{
-    padding-bottom: 66px;
+    display: block;
 }

@@ -1,189 +1,205 @@
-/* Shared by the login and register pages: a light "paper" palette, separate from the app's dark tokens. */
+/*
+  Shared by the sign-in pages (login, register, forgot and reset password).
+  Same receipt as the rest of the app, cut short: the till's header, a torn edge, then the paper.
+  Colours, type and the torn edge come from the design system.
+*/
 :host{
-    --l-till: #211C18;
-    --l-paper: #FBF8EF;
-    --l-edge: #E2DCC8;
-    --l-ink: #221E18;
-    --l-ink-soft: #6B6355;
-    --l-dim: #9C9384;
-    --l-cream: #E8E1D2;
-    --l-copper: #A85C2E;
-    --l-copper-deep: #7C431F;
-    --l-copper-ink: #FBF1E4;
-    --l-font: 'Space Grotesk', sans-serif;
-
-    /* cover anything the app shell renders around the router outlet (nav bar, page padding) */
+    /* these pages have no shell around them: fill the screen and centre the receipt on the till */
     position: fixed;
     inset: 0;
     z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--l-paper);
-    font-family: var(--l-font);
-    color: var(--l-ink);
+    padding: 24px 16px;
+    overflow-y: auto;
+    background-color: var(--till);
+    color: var(--ink);
 }
 
 .authCard{
-    width: 300px;
-    border: 1px solid var(--l-edge);
-    border-radius: 10px;
-    overflow: hidden;
-    background-color: var(--l-paper);
+    width: min(100%, 22rem);
+    margin: auto;
+    background-color: var(--paper);
+    /* the same teeth as .receipt, along the bottom only: the top is the till's header */
+    position: relative;
+    animation: feed .5s var(--ease) both;
+}
+.authCard::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--tooth) * -1);
+    height: var(--tooth);
+    background: conic-gradient(from -45deg at bottom, var(--paper) 90deg, transparent 0)
+        0 0 / calc(var(--tooth) * 2) var(--tooth) repeat-x;
+}
+@keyframes feed{
+    from{ transform: translateY(24px); opacity: 0; }
 }
 
-/* ---------- header ---------- */
+/* ---------- header: the till ---------- */
 .header{
-    background-color: var(--l-till);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 28px 0 18px;
-    color: var(--l-cream);
+    align-items: flex-start;
+    padding: 22px 26px 16px;
+    background-color: var(--till);
+    border: 1px solid var(--till-2);
+    border-bottom: none;
+    color: var(--till-ink);
 }
 .header .logo{
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 1.05rem;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+    font-family: var(--font-display);
+    font-stretch: 75%;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
 }
 .header .logoImage{
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
+    color: var(--copper);
 }
 .header .motto{
     margin-top: 8px;
-    font-size: 0.72rem;
-    color: var(--l-dim);
+    font-size: 13px;
+    color: var(--till-ink-dim);
 }
-
-/* torn edge between the dark header and the paper body */
 .tear{
-    height: 11px;
-    background-color: var(--l-till);
-    background-image:
-        linear-gradient(135deg, var(--l-paper) 50%, transparent 50%),
-        linear-gradient(45deg, var(--l-paper) 50%, transparent 50%);
-    background-size: 12px 12px;
-    background-position: 0 0, 6px 0;
-    background-repeat: repeat-x;
+    border-inline: 1px solid var(--till-2);
 }
 
-/* ---------- body ---------- */
+/* ---------- body: the paper ---------- */
 .main{
-    padding: 22px 26px 24px;
+    padding: 22px 26px 26px;
 }
 .mainContentHeader h1{
-    font-family: var(--l-font);
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--l-ink);
+    font-size: 21px;
+    color: var(--ink);
 }
 .mainContentHeader p{
-    margin-top: 4px;
-    font-size: 0.8rem;
-    color: var(--l-ink-soft);
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--ink-soft);
 }
 
 form{
-    margin-top: 24px;
+    margin-top: 22px;
 }
+/* a field is a line to write on, as on a paper form */
 .form-group{
     display: flex;
     flex-direction: column;
-    margin-bottom: 14px;
-    border-bottom: 1px solid var(--l-edge);
-    transition: border-color 0.3s ease-in-out;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--ink-soft);
+    transition: border-color .15s var(--ease);
 }
 .form-group:focus-within{
-    border-bottom-color: var(--l-copper);
+    border-bottom-color: var(--copper-deep);
+    box-shadow: 0 1px 0 var(--copper-deep);
 }
 .form-group.invalid,
 .form-group.invalid:focus-within{
-    border-bottom-color: #A13A2C;
+    border-bottom-color: var(--debit);
+    box-shadow: 0 1px 0 var(--debit);
 }
 .field-error{
-    margin: -8px 0 14px;
-    font-size: 0.72rem;
-    color: #A13A2C;
+    margin: -10px 0 16px;
+    font-size: 12.5px;
+    color: var(--debit);
 }
 .form-group label{
-    font-size: 0.68rem;
-    color: var(--l-ink-soft);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
 }
 .form-group input{
-    font-family: var(--l-font);
-    font-size: 0.95rem;
-    color: var(--l-ink);
+    font-family: var(--font-head);
+    font-size: 16px;
+    color: var(--ink);
     background: transparent;
     border: none;
     outline: none;
-    padding: 6px 0 8px;
+    padding: 5px 0 7px;
 }
 
 .forgot{
     display: block;
     text-align: right;
-    font-size: 0.75rem;
-    color: var(--l-ink-soft);
-    text-decoration: none;
+    font-size: 13px;
+    color: var(--ink-soft);
 }
 
+/* the coin */
 button{
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 6px;
     width: 100%;
-    margin-top: 18px;
+    margin-top: 20px;
     padding: 12px;
-    background-color: var(--l-copper);
-    color: var(--l-copper-ink);
-    border: none;
-    border-radius: 6px;
-    font-family: var(--l-font);
-    font-size: 0.88rem;
+    background-color: var(--copper);
+    color: var(--copper-ink);
+    border: 1px solid var(--copper-deep);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 0 var(--copper-deep);
+    font-family: var(--font-head);
+    font-size: 15px;
     font-weight: 600;
+    transition: transform .08s var(--ease), box-shadow .08s var(--ease);
 }
+button:active{
+    transform: translateY(2px);
+    box-shadow: 0 0 0 var(--copper-deep);
+}
+/* the arrow drawn before the label adds nothing the label does not say */
 button svg{
-    width: 14px;
-    height: 14px;
+    display: none;
 }
 
 .error{
     margin-top: 14px;
-    font-size: 0.78rem;
-    color: #A13A2C;
+    padding: 8px 10px;
+    border-left: 3px solid var(--debit);
+    background: var(--debit-bg);
+    font-size: 13.5px;
+    color: var(--ink);
 }
 button:disabled{
     opacity: 0.6;
     cursor: default;
+    transform: none;
+    box-shadow: 0 2px 0 var(--copper-deep);
 }
 
 .footer{
-    margin-top: 16px;
-    text-align: center;
-    font-size: 0.78rem;
-    color: var(--l-ink-soft);
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--paper-edge);
+    font-size: 13.5px;
+    color: var(--ink-soft);
 }
 .footer a{
-    color: var(--l-copper-deep);
+    color: var(--copper-deep);
     font-weight: 600;
-    text-decoration: none;
 }
 
 /* confirmation text shown in place of a form */
 .notice{
-    margin-top: 16px;
-    font-size: 0.82rem;
+    margin-top: 14px;
+    font-size: 14.5px;
     line-height: 1.5;
-    color: var(--l-ink-soft);
+    color: var(--ink-soft);
     overflow-wrap: anywhere;
 }
 .notice strong{
-    color: var(--l-ink);
+    color: var(--ink);
     font-weight: 600;
 }

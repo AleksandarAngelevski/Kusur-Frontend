@@ -1,21 +1,21 @@
 /* The list's top line comes from .register and each row draws its own bottom line. */
 
-/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
-.section-title{
-    font-family: var(--font-head);
-    margin-top: 36px;
-}
+/* the heading shares its line with "New group", so the section's dashed rule spans both */
 .heading{
     display: flex;
     justify-content: space-between;
     align-items: baseline;
+    margin-top: 28px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--paper-edge);
+}
+.heading .section-title{
+    margin: 0;
+    padding-top: 0;
+    border-top: none;
 }
 .new-group{
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--copper);
-    text-decoration: none;
-}
-.new-group:hover{
-    text-decoration: underline;
+    color: var(--copper-deep);
 }

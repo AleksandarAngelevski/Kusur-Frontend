@@ -2,12 +2,24 @@
 :host{
     display: block;
 }
+/* what happened on the left, the amount printed on the right like every other row */
 .mainContent{
     flex: 1;
     min-width: 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 12px;
+    align-items: center;
+}
+.title,
+.desc{
+    grid-column: 1;
+}
+.title strong{
+    font-weight: 700;
 }
 .amount{
-    margin-top: 2px;
-    font-size: 12px;
-    color: var(--ink-soft);
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    font-size: 14.5px;
 }

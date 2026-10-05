@@ -1,7 +1,6 @@
-/* Card layout comes from .netcard in the design system.
-   The big number defaults to --credit there, so set colour by sign here. */
+/* The total box comes from .netcard in the design system. The big number defaults to --credit there, so colour by sign here. */
 .netcard{
-    margin-top: 20px;
+    margin-top: 18px;
 }
 .netcard .big{
     color: var(--ink);
@@ -12,10 +11,19 @@
 .netcard .big.debit{
     color: var(--debit);
 }
-.netcard .lines{
-    border-top-style: dashed;
-}
+/* label ........ amount, the way a receipt joins a line to its figure */
 .line{
     display: flex;
-    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+}
+.line > span:first-child{
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.line > span:first-child::after{
+    content: " ........................................................................................................................";
+    letter-spacing: 2px;
+    color: var(--paper-edge);
 }

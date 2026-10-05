@@ -21,14 +21,14 @@ a.row:hover .title{
     gap: 2px;
 }
 .money{
-    font-size: 13px;
+    font-size: 14.5px;
 }
 .caption{
-    font-size: 10.5px;
+    font-size: 12px;
     color: var(--ink-soft);
 }
 .settled{
-    font-size: 10.5px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--credit);
 }

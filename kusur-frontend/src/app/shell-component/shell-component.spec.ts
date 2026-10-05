@@ -25,7 +25,7 @@ describe('ShellComponent', () => {
 
   it('should render the routed page with the nav bar', () => {
     const el = fixture.nativeElement as HTMLElement;
-    expect(el.querySelector('.shell-content router-outlet')).toBeTruthy();
+    expect(el.querySelector('.shell-content.receipt router-outlet')).toBeTruthy();
     expect(el.querySelector('app-nav-bar-component')).toBeTruthy();
   });
 
