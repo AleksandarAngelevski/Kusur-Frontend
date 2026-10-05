@@ -12,6 +12,13 @@ describe('RecentActivityCard', () => {
 
         fixture = TestBed.createComponent(RecentActivityCard);
         component = fixture.componentInstance;
+        fixture.componentRef.setInput('activity', {
+            id: 1,
+            activity: 'Petar added Groceries',
+            groupName: 'Skopje Flat 3B',
+            timestamp: new Date(),
+            amount: 1200,
+        });
         await fixture.whenStable();
     });
 

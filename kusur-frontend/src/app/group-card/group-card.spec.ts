@@ -12,6 +12,7 @@ describe('GroupCard', () => {
 
     fixture = TestBed.createComponent(GroupCard);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('group', { id: 1, name: 'Ohrid Trip', memberCount: 4, balance: 1200 });
     await fixture.whenStable();
   });
 
