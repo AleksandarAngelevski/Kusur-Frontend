@@ -1,7 +1,3 @@
-.home-wrapper{
-    width: 100%;
-    padding: 10px 20px;
-}
 .currentDate{
     color: var(--ink-soft);
     font-family: var(--font-mono);

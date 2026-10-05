@@ -24,6 +24,17 @@ describe('NavBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should link to each signed-in page', () => {
+    const links = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('a'));
+
+    expect(links.map((a) => [a.textContent?.trim(), a.getAttribute('href')])).toEqual([
+      ['Home', '/'],
+      ['Groups', '/groups'],
+      ['Activity', '/activity'],
+      ['Profile', '/profile'],
+    ]);
+  });
+
   it('should clear the token and go to the login page when Log out is clicked', () => {
     const auth = TestBed.inject(AuthService);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);

@@ -2,7 +2,7 @@
     position: fixed;
     display: block;
     bottom: 0;
-    /* without this it keeps the home page's 20px padding as its offset and overhangs the right edge */
+    /* a fixed box without this keeps its in-flow offset and can overhang the right edge */
     left: 0;
     width: 100%;
     height: 50px;
@@ -10,6 +10,9 @@
     color: var(--till-ink-dim);
     font-family: var(--font-head);
     font-weight: 500;
+}
+nav{
+    height: 100%;
 }
 ul{
     display: flex;
@@ -20,6 +23,10 @@ ul{
     gap: 40px;
     height: 100%;
 }
+a{
+    color: inherit;
+    text-decoration: none;
+}
 button{
     padding: 0;
     background: none;
@@ -28,6 +35,9 @@ button{
     font: inherit;
     cursor: pointer;
 }
+a:hover,
+a:focus-visible,
+a.active,
 button:hover,
 button:focus-visible{
     color: var(--till-ink);

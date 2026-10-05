@@ -1,7 +1,9 @@
-<ul>
-    <li>Home</li>
-    <li>Groups</li>
-    <li>Activity</li>
-    <li>Profile</li>
-    <li><button type="button" (click)="logout()">Log out</button></li>
-</ul>
+<nav aria-label="Main">
+    <ul>
+        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" ariaCurrentWhenActive="page">Home</a></li>
+        <li><a routerLink="/groups" routerLinkActive="active" ariaCurrentWhenActive="page">Groups</a></li>
+        <li><a routerLink="/activity" routerLinkActive="active" ariaCurrentWhenActive="page">Activity</a></li>
+        <li><a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">Profile</a></li>
+        <li><button type="button" (click)="logout()">Log out</button></li>
+    </ul>
+</nav>

@@ -12,6 +12,20 @@ export class AuthService {
     token = signal<string | null>(this.readToken());
     isLoggedIn = computed(() => !!this.token());
 
+    /** The token's subject, which the backend sets to the username. Null when signed out or the token can't be read. */
+    username = computed(() => {
+        const payload = this.token()?.split('.')[1];
+        if (!payload) return null;
+        try {
+            // JWT segments are base64url; decode as UTF-8 so non-Latin usernames survive
+            const bytes = Uint8Array.from(atob(payload.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+            const subject = JSON.parse(new TextDecoder().decode(bytes)).sub;
+            return typeof subject === 'string' ? subject : null;
+        } catch {
+            return null;
+        }
+    });
+
     login(request: LoginRequest): Observable<LoginResponse> {
         return this.http.post<LoginResponse>('/api/auth/login', request).pipe(
             tap((response) => this.saveToken(response.token))
