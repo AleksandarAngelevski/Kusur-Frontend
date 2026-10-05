@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
+import { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterRequest, ResetPasswordRequest } from '../models/auth.model';
 
 const TOKEN_KEY = 'token';
 
@@ -29,6 +29,12 @@ export class AuthService {
     requestPasswordReset(email: string): Observable<void> {
         const request: ForgotPasswordRequest = { email };
         return this.http.post<void>('/api/auth/forgot-password', request);
+    }
+
+    /** Sets a new password using the token from the emailed reset link. Does not sign the user in. */
+    resetPassword(token: string, newPassword: string): Observable<void> {
+        const request: ResetPasswordRequest = { token, newPassword };
+        return this.http.post<void>('/api/auth/reset-password', request);
     }
 
     logout(): void {

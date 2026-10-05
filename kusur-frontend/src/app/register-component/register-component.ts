@@ -2,9 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { MIN_PASSWORD_LENGTH } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
-
-const MIN_PASSWORD_LENGTH = 8;
 
 @Component({
     imports: [ReactiveFormsModule, RouterLink],

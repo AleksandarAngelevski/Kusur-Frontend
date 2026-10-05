@@ -16,3 +16,11 @@ export interface RegisterRequest {
 export interface ForgotPasswordRequest {
     email: string;
 }
+
+export interface ResetPasswordRequest {
+    token: string;
+    newPassword: string;
+}
+
+/** Kept in step with the backend's rule for new passwords. */
+export const MIN_PASSWORD_LENGTH = 8;
