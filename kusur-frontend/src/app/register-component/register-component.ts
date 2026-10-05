@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { MIN_PASSWORD_LENGTH } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
+import { apiErrorMessage } from '../shared/api-error';
 
 @Component({
     imports: [ReactiveFormsModule, RouterLink],
@@ -69,6 +70,8 @@ export class RegisterComponent {
             const message = err.error?.message;
             return typeof message === 'string' && message ? message : 'That username or email is already taken.';
         }
+        // the backend limits how often these endpoints may be tried, and says how long to wait
+        if (err.status === 429) return apiErrorMessage(err, 'Too many attempts. Try again in a few minutes.');
         // 0 is a failed request; 502-504 is what a proxy answers when the backend behind it is down
         if ([0, 502, 503, 504].includes(err.status)) return "Can't reach the server. Try again in a moment.";
         return 'Something went wrong. Please try again.';

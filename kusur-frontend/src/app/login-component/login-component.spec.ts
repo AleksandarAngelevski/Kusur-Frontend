@@ -41,7 +41,6 @@ describe('LoginComponent', () => {
 
     afterEach(() => {
         http.verify();
-        localStorage.removeItem('token');
     });
 
     it('should create', () => {

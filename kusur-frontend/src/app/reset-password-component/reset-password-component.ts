@@ -4,6 +4,7 @@ import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validatio
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MIN_PASSWORD_LENGTH } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
+import { apiErrorMessage } from '../shared/api-error';
 
 const passwordsMatch = (group: AbstractControl): ValidationErrors | null =>
     group.get('password')?.value === group.get('confirm')?.value ? null : { mismatch: true };
@@ -75,6 +76,8 @@ export class ResetPasswordComponent {
     }
 
     private messageFor(err: HttpErrorResponse): string {
+        // the backend limits how often these endpoints may be tried, and says how long to wait
+        if (err.status === 429) return apiErrorMessage(err, 'Too many attempts. Try again in a few minutes.');
         // 0 is a failed request; 502-504 is what a proxy answers when the backend behind it is down
         if ([0, 502, 503, 504].includes(err.status)) return "Can't reach the server. Try again in a moment.";
         return 'Something went wrong. Please try again.';

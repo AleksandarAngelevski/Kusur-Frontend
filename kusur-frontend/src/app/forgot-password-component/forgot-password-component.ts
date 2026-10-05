@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { apiErrorMessage } from '../shared/api-error';
 
 @Component({
     imports: [ReactiveFormsModule, RouterLink],
@@ -51,6 +52,8 @@ export class ForgotPasswordComponent {
     }
 
     private messageFor(err: HttpErrorResponse): string {
+        // the backend limits how often these endpoints may be tried, and says how long to wait
+        if (err.status === 429) return apiErrorMessage(err, 'Too many attempts. Try again in a few minutes.');
         // 0 is a failed request; 502-504 is what a proxy answers when the backend behind it is down
         if ([0, 502, 503, 504].includes(err.status)) return "Can't reach the server. Try again in a moment.";
         return 'Something went wrong. Please try again.';

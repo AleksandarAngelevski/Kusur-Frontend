@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 import { RegisterComponent } from './register-component';
 
 describe('RegisterComponent', () => {
@@ -47,7 +48,6 @@ describe('RegisterComponent', () => {
 
     afterEach(() => {
         http.verify();
-        localStorage.removeItem('token');
     });
 
     it('should create', () => {
@@ -84,7 +84,7 @@ describe('RegisterComponent', () => {
         expect(req.request.body).toEqual({ username: 'ace', email: 'ace@example.com', password: 'longenough' });
         req.flush({ token: 'some.jwt.token' });
 
-        expect(localStorage.getItem('token')).toBe('some.jwt.token');
+        expect(TestBed.inject(AuthService).token()).toBe('some.jwt.token');
         expect(navigate).toHaveBeenCalledWith(['/']);
     });
 

@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -11,7 +13,7 @@ describe('NavBarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavBarComponent],
-      providers: [provideRouter([]), provideFakeGroupsApi()],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting(), provideFakeGroupsApi()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavBarComponent);
@@ -19,7 +21,6 @@ describe('NavBarComponent', () => {
     await fixture.whenStable();
   });
 
-  afterEach(() => localStorage.removeItem('token'));
 
   it('should create', () => {
     expect(component).toBeTruthy();
@@ -49,14 +50,13 @@ describe('NavBarComponent', () => {
     const auth = TestBed.inject(AuthService);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     auth.token.set('some.jwt.token');
-    localStorage.setItem('token', 'some.jwt.token');
 
     const button = (fixture.nativeElement as HTMLElement).querySelector('button')!;
     expect(button.textContent).toContain('Log out');
     button.click();
 
     expect(auth.isLoggedIn()).toBe(false);
-    expect(localStorage.getItem('token')).toBeNull();
+    TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: '/api/auth/logout' }).flush(null);
     expect(navigate).toHaveBeenCalledWith(['/login']);
   });
 });
