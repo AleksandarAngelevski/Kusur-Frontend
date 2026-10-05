@@ -1,0 +1,167 @@
+/* The login page uses its own light "paper" palette, separate from the app's dark tokens. */
+:host{
+    --l-till: #211C18;
+    --l-paper: #FBF8EF;
+    --l-edge: #E2DCC8;
+    --l-ink: #221E18;
+    --l-ink-soft: #6B6355;
+    --l-dim: #9C9384;
+    --l-cream: #E8E1D2;
+    --l-copper: #A85C2E;
+    --l-copper-deep: #7C431F;
+    --l-copper-ink: #FBF1E4;
+    --l-font: 'Space Grotesk', sans-serif;
+
+    /* cover anything the app shell renders around the router outlet (nav bar, page padding) */
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--l-paper);
+    font-family: var(--l-font);
+    color: var(--l-ink);
+}
+
+.loginForm{
+    width: 300px;
+    border: 1px solid var(--l-edge);
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--l-paper);
+}
+
+/* ---------- header ---------- */
+.header{
+    background-color: var(--l-till);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 28px 0 18px;
+    color: var(--l-cream);
+}
+.header .logo{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+.header .logoImage{
+    width: 22px;
+    height: 22px;
+}
+.header .motto{
+    margin-top: 8px;
+    font-size: 0.72rem;
+    color: var(--l-dim);
+}
+
+/* torn edge between the dark header and the paper body */
+.tear{
+    height: 11px;
+    background-color: var(--l-till);
+    background-image:
+        linear-gradient(135deg, var(--l-paper) 50%, transparent 50%),
+        linear-gradient(45deg, var(--l-paper) 50%, transparent 50%);
+    background-size: 12px 12px;
+    background-position: 0 0, 6px 0;
+    background-repeat: repeat-x;
+}
+
+/* ---------- body ---------- */
+.main{
+    padding: 22px 26px 24px;
+}
+.mainContentHeader h1{
+    font-family: var(--l-font);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--l-ink);
+}
+.mainContentHeader p{
+    margin-top: 4px;
+    font-size: 0.8rem;
+    color: var(--l-ink-soft);
+}
+
+form{
+    margin-top: 24px;
+}
+.form-group{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--l-edge);
+    transition: border-color 0.3s ease-in-out;
+}
+.form-group:focus-within{
+    border-bottom-color: var(--l-copper);
+}
+.form-group label{
+    font-size: 0.68rem;
+    color: var(--l-ink-soft);
+}
+.form-group input{
+    font-family: var(--l-font);
+    font-size: 0.95rem;
+    color: var(--l-ink);
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 6px 0 8px;
+}
+
+.forgot{
+    display: block;
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--l-ink-soft);
+    text-decoration: none;
+}
+
+button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 18px;
+    padding: 12px;
+    background-color: var(--l-copper);
+    color: var(--l-copper-ink);
+    border: none;
+    border-radius: 6px;
+    font-family: var(--l-font);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+button svg{
+    width: 14px;
+    height: 14px;
+}
+
+.error{
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #A13A2C;
+}
+button:disabled{
+    opacity: 0.6;
+    cursor: default;
+}
+
+.footer{
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--l-ink-soft);
+}
+.footer a{
+    color: var(--l-copper-deep);
+    font-weight: 600;
+    text-decoration: none;
+}

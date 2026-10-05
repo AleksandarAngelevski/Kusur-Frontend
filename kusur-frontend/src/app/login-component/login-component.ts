@@ -1,0 +1,48 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Component({
+    imports: [ReactiveFormsModule],
+    selector: 'app-login-component',
+    styleUrl: './login-component.css',
+    templateUrl: './login-component.html',
+})
+export class LoginComponent {
+    private auth = inject(AuthService);
+    private router = inject(Router);
+
+    submitting = signal(false);
+    errorMessage = signal('');
+
+    loginForm = new FormGroup({
+        email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+        password: new FormControl('', { nonNullable: true, validators: Validators.required })
+    });
+
+    onSubmit(){
+        if (this.loginForm.invalid) {
+            this.loginForm.markAllAsTouched();
+            return;
+        }
+
+        this.submitting.set(true);
+        this.errorMessage.set('');
+
+        this.auth.login(this.loginForm.getRawValue()).subscribe({
+            next: () => this.router.navigate(['/']),
+            error: (err: HttpErrorResponse) => {
+                this.submitting.set(false);
+                this.errorMessage.set(this.messageFor(err));
+            }
+        });
+    }
+
+    private messageFor(err: HttpErrorResponse): string {
+        if (err.status === 401 || err.status === 403) return 'Wrong email or password.';
+        if (err.status === 0) return "Can't reach the server. Try again in a moment.";
+        return 'Something went wrong. Please try again.';
+    }
+}
