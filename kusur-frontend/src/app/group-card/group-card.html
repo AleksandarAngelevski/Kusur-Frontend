@@ -8,7 +8,10 @@
     </div>
     <div class="mainContent">
         <div class="title">{{ group().name }}</div>
-        <div class="desc">{{ group().memberCount }} {{ group().memberCount === 1 ? 'member' : 'members' }}</div>
+        <!-- a friend's tab is always the two of us, so there is no count worth showing -->
+        @if (!friend()) {
+            <div class="desc">{{ group().memberCount }} {{ group().memberCount === 1 ? 'member' : 'members' }}</div>
+        }
     </div>
     <div class="right">
         @if (group().balance === 0) {

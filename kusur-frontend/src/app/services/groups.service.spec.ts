@@ -71,6 +71,44 @@ describe('GroupsService', () => {
         expect(service.group(1)!.expenses.map((expense) => expense.description)).toEqual(['Boat tickets']);
     });
 
+    describe('friends', () => {
+        it('should keep a friend\'s tab out of the groups and name it after the friend', () => {
+            let tab: GroupDetails | undefined;
+            service.addFriend(' stefan ').subscribe((result) => (tab = result));
+
+            expect(tab).toMatchObject({ direct: true, name: 'stefan' });
+            expect(tab!.members.map((member) => member.name)).toEqual(['You', 'stefan']);
+            expect(service.friends()).toEqual([{ id: tab!.id, name: 'stefan', imageUrl: undefined, memberCount: 2, balance: 0 }]);
+            expect(service.groups().map((group) => group.name)).toEqual(['Ohrid Trip', 'Apartment']);
+        });
+
+        it('should not list the same friend twice when they are added again', () => {
+            service.addFriend('stefan').subscribe();
+            service.addFriend('Stefan').subscribe();
+
+            expect(service.friends().length).toBe(1);
+        });
+
+        it('should track my balance with a friend and show their expenses in the activity', () => {
+            let tab!: GroupDetails;
+            service.addFriend('stefan').subscribe((result) => (tab = result));
+            const stefan = tab.members[1];
+
+            service.addExpense(tab.id, { description: 'Lunch', amount: 600, date: new Date(), paidById: stefan.id, splitBetweenIds: [ME_ID, stefan.id] }).subscribe();
+
+            expect(service.friends()[0].balance).toBe(-300);
+            expect(service.activity()[0]).toMatchObject({ activity: 'stefan added Lunch', groupName: 'stefan', amount: 600 });
+        });
+
+        it('should pass on the backend\'s message when nobody has that username or email', () => {
+            let error: HttpErrorResponse | undefined;
+            service.addFriend('nobody').subscribe({ error: (err) => (error = err) });
+
+            expect(error?.error.message).toBe('No user with that username or email.');
+            expect(service.friends()).toEqual([]);
+        });
+    });
+
     it('should drop a group from the list when it is deleted', () => {
         service.deleteGroup(1).subscribe();
 

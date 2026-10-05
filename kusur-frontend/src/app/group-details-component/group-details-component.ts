@@ -2,7 +2,7 @@ import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { GroupsService, memberName } from '../services/groups.service';
 import { apiErrorMessage } from '../shared/api-error';
 import { expenseShares, netBalances, simplifyDebts } from '../shared/balances';
@@ -32,6 +32,7 @@ interface HistoryEntry {
 export class GroupDetailsComponent {
     private groups = inject(GroupsService);
     private params = toSignal(inject(ActivatedRoute).paramMap);
+    private router = inject(Router);
 
     protected readonly initials = initials;
     private meId = this.groups.meId;
@@ -86,6 +87,24 @@ export class GroupDetailsComponent {
             (a, b) => b.date.getTime() - a.date.getTime() || b.key.localeCompare(a.key)
         );
     });
+
+    /** "Remove friend" is waiting for its second click */
+    confirmingRemove = signal(false);
+    removeError = signal('');
+
+    /** Closes the tab with this friend. The backend refuses unless both of us are settled up. */
+    removeFriend(){
+        const group = this.group();
+        if (!group) return;
+        this.removeError.set('');
+        this.groups.deleteGroup(group.id).subscribe({
+            next: () => this.router.navigate(['/groups']),
+            error: (err) => {
+                this.confirmingRemove.set(false);
+                this.removeError.set(apiErrorMessage(err));
+            }
+        });
+    }
 
     /** the settlement whose Undo is waiting for its second click */
     confirmingUndo = signal<number | null>(null);

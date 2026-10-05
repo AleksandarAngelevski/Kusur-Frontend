@@ -13,5 +13,8 @@ import { initials } from '../shared/initials';
 export class GroupCard {
   group = input.required<Group>();
 
+  /** set for a friend's tab, which shows the friend's name and balance only */
+  friend = input(false);
+
   initials = computed(() => initials(this.group().name));
 }

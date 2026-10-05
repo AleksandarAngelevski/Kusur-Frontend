@@ -1,13 +1,18 @@
-<a class="back" routerLink="/groups">‹ Groups</a>
+<a class="back" routerLink="/groups">‹ Groups and friends</a>
 
 @if (group(); as group) {
+    <!-- a friend's tab is the same page with the group-only parts left out: member count, members, settings -->
     <header class="group-header">
         <h1>{{ group.name }}</h1>
-        <p>{{ group.members.length }} {{ group.members.length === 1 ? 'member' : 'members' }}</p>
+        @if (group.direct) {
+            <p>Expenses between the two of you</p>
+        } @else {
+            <p>{{ group.members.length }} {{ group.members.length === 1 ? 'member' : 'members' }}</p>
+        }
     </header>
 
     <div class="netcard">
-        <div class="label">Your balance in this group</div>
+        <div class="label">{{ group.direct ? 'Your balance with ' + group.name : 'Your balance in this group' }}</div>
         <div class="big"
              [class.credit]="myBalance() > 0"
              [class.debit]="myBalance() < 0">
@@ -27,9 +32,12 @@
     <div class="actions">
         <a class="btn-primary" [routerLink]="['/groups', group.id, 'expenses', 'new']">Add expense</a>
         <a class="btn-secondary" [routerLink]="['/groups', group.id, 'settle']">Settle up</a>
-        <a class="btn-secondary" [routerLink]="['/groups', group.id, 'settings']">Settings</a>
+        @if (!group.direct) {
+            <a class="btn-secondary" [routerLink]="['/groups', group.id, 'settings']">Settings</a>
+        }
     </div>
 
+    @if (!group.direct) {
     <h2 class="section-title">Who pays whom</h2>
     <div class="register">
         @for (payment of payments(); track $index) {
@@ -81,6 +89,7 @@
             <p class="field-error" id="new-member-error" role="alert">{{ memberError() }}</p>
         }
     </form>
+    }
 
     <h2 class="section-title">History</h2>
     <div class="register">
@@ -121,6 +130,25 @@
             <p class="empty">No expenses yet. Add the first one.</p>
         }
     </div>
+
+    @if (group.direct) {
+        <div class="remove-friend">
+            @if (myBalance() !== 0) {
+                <p>Settle up with {{ group.name }} before removing them as a friend.</p>
+            } @else if (confirmingRemove()) {
+                <p role="alert">Remove {{ group.name }}? Your shared history goes with them, for both of you.</p>
+                <div class="choices">
+                    <button class="btn-link danger" type="button" (click)="removeFriend()">Yes, remove</button>
+                    <button class="btn-link" type="button" (click)="confirmingRemove.set(false)">Keep</button>
+                </div>
+            } @else {
+                <button class="btn-link danger" type="button" (click)="confirmingRemove.set(true)">Remove friend</button>
+            }
+            @if (removeError()) {
+                <p class="field-error" role="alert">{{ removeError() }}</p>
+            }
+        </div>
+    }
 } @else {
     <header class="group-header">
         <h1>Group not found</h1>

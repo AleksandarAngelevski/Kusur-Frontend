@@ -159,3 +159,20 @@ a.row:hover .title{
 .btn-link.danger{
     color: var(--debit);
 }
+
+/* closing a friend's tab sits at the foot of their page, behind a second click */
+.remove-friend{
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--paper-edge);
+    font-size: 13.5px;
+    color: var(--ink-soft);
+}
+.remove-friend .btn-link{
+    font-size: 13.5px;
+}
+.remove-friend .choices{
+    display: flex;
+    gap: 16px;
+    margin-top: 10px;
+}

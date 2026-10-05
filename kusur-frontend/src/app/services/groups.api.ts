@@ -79,6 +79,11 @@ export class GroupsApi {
         return this.http.delete<void>(`/api/groups/${groupId}`);
     }
 
+    /** opens a tab with the user who has this username or email, or returns the one already open */
+    addFriend(identifier: string): Observable<GroupDetails> {
+        return this.http.post<GroupWire>('/api/friends', { identifier }).pipe(map(fromWire));
+    }
+
     /** identifier is the person's username or email */
     addMember(groupId: number, identifier: string): Observable<GroupDetails> {
         return this.http.post<GroupWire>(`/api/groups/${groupId}/members`, { identifier }).pipe(map(fromWire));

@@ -9,15 +9,15 @@ import { GroupsService } from '../services/groups.service';
   templateUrl: './balance-component.html',
 })
 export class BalanceComponent {
-  private groups = inject(GroupsService).groups;
+  private service = inject(GroupsService);
 
-  /** totals across groups: what I'm owed where I'm ahead, and what I owe in the rest */
+  /** totals across groups and friends: what I'm owed where I'm ahead, and what I owe in the rest */
   owedBalance = computed(() => this.sum((balance) => balance > 0));
   oweBalance = computed(() => -this.sum((balance) => balance < 0));
   netBalance = computed(() => this.owedBalance() - this.oweBalance());
 
   private sum(include: (balance: number) => boolean): number {
-    return this.groups()
+    return [...this.service.groups(), ...this.service.friends()]
       .filter((group) => include(group.balance))
       .reduce((total, group) => total + group.balance, 0);
   }

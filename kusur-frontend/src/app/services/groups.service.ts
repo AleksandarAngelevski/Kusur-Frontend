@@ -53,15 +53,10 @@ export class GroupsService {
     isAdmin = computed(() => this.me()?.role === 'ADMIN');
 
     /** Card summaries for lists, with the signed-in user's balance in each group. */
-    groups = computed<Group[]>(() =>
-        this.store().map((group) => ({
-            id: group.id,
-            name: group.name,
-            imageUrl: group.imageUrl,
-            memberCount: group.members.length,
-            balance: netBalances(group).get(this.meId()) ?? 0,
-        }))
-    );
+    groups = computed<Group[]>(() => this.store().filter((group) => !group.direct).map((group) => this.summarise(group)));
+
+    /** The friends I share a tab with, each with my balance with them. A friend's id is the id of that tab. */
+    friends = computed<Group[]>(() => this.store().filter((group) => group.direct).map((group) => this.summarise(group)));
 
     /** Every expense and settlement across my groups, newest first, for the activity feed. */
     activity = computed<Activity[]>(() =>
@@ -171,6 +166,17 @@ export class GroupsService {
         );
     }
 
+    /**
+     * Opens a tab with a friend, found by username or email, so we can add expenses without a group.
+     * If we already share one, that tab comes back and nothing new is made.
+     */
+    addFriend(identifier: string): Observable<GroupDetails> {
+        return this.api.addFriend(identifier.trim()).pipe(
+            map((tab) => this.adopt(tab)),
+            tap((tab) => this.store.update((groups) => [...groups.filter((group) => group.id !== tab.id), tab]))
+        );
+    }
+
     renameGroup(groupId: number, name: string): Observable<GroupDetails> {
         return this.replace(this.api.rename(groupId, name.trim()));
     }
@@ -236,12 +242,29 @@ export class GroupsService {
         this.store.update((groups) => groups.filter((group) => group.id !== groupId));
     }
 
-    /** The backend names members by username; the signed-in user reads as "You" everywhere in the app. */
+    /**
+     * The backend names members by username; the signed-in user reads as "You" everywhere in the app.
+     * A tab with a friend is named after the friend, so every page that shows a group's name shows theirs.
+     */
     private adopt(group: GroupDetails): GroupDetails {
         const meId = this.meId();
+        const iAmIn = group.members.some((member) => member.id === meId);
+        const friend = [...group.members, ...group.formerMembers].find((member) => member.id !== meId);
         return {
             ...group,
+            // an admin looking at other people's tab keeps the backend's "a & b"
+            name: group.direct && iAmIn ? (friend?.name ?? 'Deleted user') : group.name,
             members: group.members.map((member) => (member.id === meId ? { ...member, name: 'You' } : member)),
+        };
+    }
+
+    private summarise(group: GroupDetails): Group {
+        return {
+            id: group.id,
+            name: group.name,
+            imageUrl: group.imageUrl,
+            memberCount: group.members.length,
+            balance: netBalances(group).get(this.meId()) ?? 0,
         };
     }
 

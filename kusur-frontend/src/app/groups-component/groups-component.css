@@ -19,3 +19,8 @@
     font-weight: 600;
     color: var(--copper-deep);
 }
+.empty{
+    padding: 12px 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+}

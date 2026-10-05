@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { GroupsService } from '../services/groups.service';
 import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
@@ -34,7 +34,7 @@ describe('GroupDetailsComponent', () => {
     };
 
     /** Renders the page as if opened at /groups/<id>. */
-    const open = async (id: string) => {
+    const open = async (id: string, setup: (service: GroupsService) => void = () => {}) => {
         await TestBed.configureTestingModule({
             imports: [GroupDetailsComponent],
             providers: [
@@ -44,7 +44,7 @@ describe('GroupDetailsComponent', () => {
             ],
         }).compileComponents();
 
-        loadFakeGroups();
+        setup(loadFakeGroups());
         fixture = TestBed.createComponent(GroupDetailsComponent);
         el = fixture.nativeElement;
         await fixture.whenStable();
@@ -160,6 +160,59 @@ describe('GroupDetailsComponent', () => {
             await addMember('petar');
             expect(text('.field-error')).toEqual(['Petar is already in this group.']);
             expect(text('.group-header p')).toEqual(['4 members']);
+        });
+    });
+
+    describe('for a tab with a friend', () => {
+        // the fake backend numbers what it creates from 100: the tab is 100 and stefan is 101
+        const TAB = 100;
+        const STEFAN = 101;
+        let navigate: ReturnType<typeof vi.spyOn>;
+
+        const click = async (label: string) => {
+            Array.from(el.querySelectorAll('button')).find((button) => button.textContent!.trim() === label)!.click();
+            await fixture.whenStable();
+        };
+
+        beforeEach(async () => {
+            await open(String(TAB), (service) => service.addFriend('stefan').subscribe());
+            navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+        });
+
+        it('should be titled with the friend and leave out the group-only parts', () => {
+            expect(text('h1')).toEqual(['stefan']);
+            expect(text('.group-header p')).toEqual(['Expenses between the two of you']);
+            expect(text('.netcard .label')).toEqual(['Your balance with stefan']);
+            expect(text('.section-title')).toEqual(['History']);
+            expect(el.querySelector('form.add-member')).toBeNull();
+            expect(Array.from(el.querySelectorAll('.actions a')).map((a) => a.getAttribute('href'))).toEqual([
+                `/groups/${TAB}/expenses/new`,
+                `/groups/${TAB}/settle`,
+            ]);
+        });
+
+        it('should show what we owe each other once there is an expense', async () => {
+            TestBed.inject(GroupsService)
+                .addExpense(TAB, { description: 'Lunch', amount: 600, date: new Date(), paidById: 1, splitBetweenIds: [1, STEFAN] })
+                .subscribe();
+            await fixture.whenStable();
+
+            expect(text('.netcard .big')).toEqual(['+300 ден']);
+            expect(rows('History')[0]).toContain('Lunch You paid');
+            expect(el.querySelector('.remove-friend')!.textContent).toContain('Settle up with stefan before removing them');
+            expect(text('.remove-friend button')).toEqual([]);
+        });
+
+        it('should remove the friend after a second click when we are settled up', async () => {
+            await click('Remove friend');
+            expect(TestBed.inject(GroupsService).friends().length).toBe(1);
+
+            await click('Keep');
+            await click('Remove friend');
+            await click('Yes, remove');
+
+            expect(TestBed.inject(GroupsService).friends()).toEqual([]);
+            expect(navigate).toHaveBeenCalledWith(['/groups']);
         });
     });
 

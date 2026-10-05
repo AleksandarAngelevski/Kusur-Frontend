@@ -1,0 +1,23 @@
+<a class="back" routerLink="/groups">‹ Groups and friends</a>
+
+<h1>Add a friend</h1>
+<p class="lead">Split expenses with one person, without making a group. They need a Kusur account.</p>
+
+<form [formGroup]="friendForm" (ngSubmit)="onSubmit()">
+    <div class="field">
+        <label for="identifier">Their username or email</label>
+        <input id="identifier" type="text" formControlName="identifier" autocomplete="off" autocapitalize="none"
+            [attr.aria-invalid]="identifierError() ? 'true' : null"
+            [attr.aria-describedby]="identifierError() ? 'identifier-error' : null" />
+        @if (identifierError()) {
+            <p class="field-error" id="identifier-error">{{ identifierError() }}</p>
+        }
+    </div>
+    @if (errorMessage()) {
+        <p class="error" role="alert">{{ errorMessage() }}</p>
+    }
+    <div class="form-actions">
+        <button class="btn-primary" type="submit" [disabled]="submitting()">Add friend</button>
+        <a routerLink="/groups">Cancel</a>
+    </div>
+</form>

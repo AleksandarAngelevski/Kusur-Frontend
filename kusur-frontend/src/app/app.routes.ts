@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ExpenseFormComponent } from './expense-form-component/expense-form-component';
+import { AddFriendComponent } from './add-friend-component/add-friend-component';
 import { AdminComponent } from './admin-component/admin-component';
 import { AdminGroupComponent } from './admin-group-component/admin-group-component';
 import { CreateGroupComponent } from './create-group-component/create-group-component';
@@ -61,6 +62,10 @@ export const routes: Routes = [
             {
                 path: 'groups/:id/settle',
                 component: SettleUpComponent
+            },
+            {
+                path: 'friends/new',
+                component: AddFriendComponent
             },
             {
                 path: 'activity',

@@ -10,5 +10,8 @@ import { GroupsService } from '../services/groups.service';
   templateUrl: './groups-component.html',
 })
 export class GroupsComponent {
-  groups = inject(GroupsService).groups;
+  private service = inject(GroupsService);
+
+  groups = this.service.groups;
+  friends = this.service.friends;
 }

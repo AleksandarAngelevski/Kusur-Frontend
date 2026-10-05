@@ -39,6 +39,12 @@ export interface GroupDetails{
     id: number;
     name: string;
     imageUrl?: string;
+    /**
+     * True for the private tab between me and one friend: expenses without a group.
+     * It behaves like a two-person group, but has no name of its own, takes no other members
+     * and is listed under Friends.
+     */
+    direct?: boolean;
     /** the member who may rename or delete the group and remove others */
     ownerId: number;
     members: Member[];

@@ -94,6 +94,23 @@ export class FakeGroupsApi implements Pick<GroupsApi, keyof GroupsApi> {
         return of(undefined);
     }
 
+    /** Opens a tab with anyone by name, except "nobody", who does not exist. Asking twice gives the same tab. */
+    addFriend(identifier: string): Observable<GroupDetails> {
+        if (identifier === 'nobody') return fail(404, 'No user with that username or email.');
+        const existing = this.groups.find(
+            (group) => group.direct && group.members.some((member) => member.name.toLowerCase() === identifier.toLowerCase())
+        );
+        if (existing) return of(existing);
+
+        const tab: GroupDetails = {
+            id: this.nextId++, name: `ace & ${identifier}`, ownerId: ME_ID, direct: true,
+            members: [{ id: ME_ID, name: 'ace' }, { id: this.nextId++, name: identifier }],
+            formerMembers: [], expenses: [], settlements: [],
+        };
+        this.groups = [...this.groups, tab];
+        return of(tab);
+    }
+
     /** Anyone can be added by name, except "nobody", who does not exist. */
     addMember(groupId: number, identifier: string): Observable<GroupDetails> {
         const group = this.find(groupId);
