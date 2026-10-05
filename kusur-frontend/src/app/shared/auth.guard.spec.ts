@@ -1,15 +1,20 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRouteSnapshot, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateFn, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { authGuard } from './auth.guard';
+import { authGuard, guestGuard } from './auth.guard';
 
-describe('authGuard', () => {
+describe('route guards', () => {
     let auth: AuthService;
 
-    const runGuard = () =>
+    const run = (guard: CanActivateFn) =>
         TestBed.runInInjectionContext(() =>
-            authGuard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
+            guard({} as ActivatedRouteSnapshot, {} as RouterStateSnapshot)
         );
+
+    const urlOf = (result: unknown) => {
+        expect(result).toBeInstanceOf(UrlTree);
+        return TestBed.inject(Router).serializeUrl(result as UrlTree);
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -18,18 +23,31 @@ describe('authGuard', () => {
         auth = TestBed.inject(AuthService);
     });
 
-    it('should allow the route when a token is present', () => {
-        auth.token.set('some.jwt.token');
+    describe('authGuard', () => {
+        it('should allow the route when a token is present', () => {
+            auth.token.set('some.jwt.token');
 
-        expect(runGuard()).toBe(true);
+            expect(run(authGuard)).toBe(true);
+        });
+
+        it('should redirect to /login when there is no token', () => {
+            auth.token.set(null);
+
+            expect(urlOf(run(authGuard))).toBe('/login');
+        });
     });
 
-    it('should redirect to /login when there is no token', () => {
-        auth.token.set(null);
+    describe('guestGuard', () => {
+        it('should allow the route when there is no token', () => {
+            auth.token.set(null);
 
-        const result = runGuard();
+            expect(run(guestGuard)).toBe(true);
+        });
 
-        expect(result).toBeInstanceOf(UrlTree);
-        expect(TestBed.inject(Router).serializeUrl(result as UrlTree)).toBe('/login');
+        it('should redirect home when a token is present', () => {
+            auth.token.set('some.jwt.token');
+
+            expect(urlOf(run(guestGuard))).toBe('/');
+        });
     });
 });

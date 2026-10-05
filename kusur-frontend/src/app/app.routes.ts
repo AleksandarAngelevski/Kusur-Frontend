@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home-component/home-component';
 import { LoginComponent } from './login-component/login-component';
 import { RegisterComponent } from './register-component/register-component';
-import { authGuard } from './shared/auth.guard';
+import { authGuard, guestGuard } from './shared/auth.guard';
 
 
 export const routes: Routes = [
@@ -13,10 +13,12 @@ export const routes: Routes = [
     },
     {
         path: 'login',
-        component: LoginComponent
+        component: LoginComponent,
+        canActivate: [guestGuard]
     },
     {
         path: 'register',
-        component: RegisterComponent
+        component: RegisterComponent,
+        canActivate: [guestGuard]
     }
 ];
