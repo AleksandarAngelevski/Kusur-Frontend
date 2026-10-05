@@ -11,6 +11,7 @@ describe('SettleUpComponent', () => {
     let navigate: ReturnType<typeof vi.spyOn>;
     /** the :id the stubbed route reports; set in open() once the service can supply it */
     let routeId = '';
+    let routeData: Record<string, unknown> = {};
 
     const fieldErrors = () =>
         Array.from(el.querySelectorAll('.field-error')).map((p) => p.textContent?.trim());
@@ -48,7 +49,7 @@ describe('SettleUpComponent', () => {
             providers: [
                 provideRouter([]),
                 provideFakeGroupsApi(),
-                { provide: ActivatedRoute, useValue: { snapshot: { get paramMap() { return convertToParamMap({ id: routeId }); } } } },
+                { provide: ActivatedRoute, useValue: { snapshot: { get paramMap() { return convertToParamMap({ id: routeId }); }, get data() { return routeData; } } } },
             ],
         }).compileComponents();
 
@@ -94,6 +95,25 @@ describe('SettleUpComponent', () => {
 
             await typeAmount('10.5');
             expect(fieldErrors()).toEqual(['Use whole denars, no decimals.']);
+        });
+    });
+
+    describe('opened from the admin view by someone who is not in the group', () => {
+        beforeEach(async () => {
+            routeData = { admin: true };
+            await open((service) => {
+                vi.spyOn(service, 'meId').mockReturnValue(999);
+                return 2;
+            });
+        });
+        afterEach(() => (routeData = {}));
+
+        it('should start from the payment the group needs and return to the admin view', async () => {
+            expect([selected('fromId'), selected('toId')]).toEqual(['You', 'Ana']);
+            expect(el.querySelector('.back')!.getAttribute('href')).toBe('/admin/groups/2');
+
+            await submit();
+            expect(navigate).toHaveBeenCalledWith(['/admin/groups', 2]);
         });
     });
 

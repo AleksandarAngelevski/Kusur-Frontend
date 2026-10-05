@@ -12,6 +12,17 @@
         </p>
     </header>
 
+    <div class="actions">
+        <a class="btn-primary" [routerLink]="['/admin/groups', group.id, 'expenses', 'new']">Add expense</a>
+        @if (group.members.length > 1) {
+            <a class="btn-secondary" [routerLink]="['/admin/groups', group.id, 'settle']">Record settlement</a>
+        }
+    </div>
+
+    @if (errorMessage()) {
+        <p class="problem" role="alert">{{ errorMessage() }}</p>
+    }
+
     <h2 class="section-title">Expenses · {{ expenses().length }}</h2>
     <div class="register">
         @for (expense of expenses(); track expense.id) {
@@ -27,6 +38,32 @@
             </a>
         } @empty {
             <p class="empty">This group has no expenses.</p>
+        }
+    </div>
+
+    <h2 class="section-title">Settlements · {{ settlements().length }}</h2>
+    <div class="register">
+        @for (settlement of settlements(); track settlement.id) {
+            <div class="row">
+                <div class="mainContent">
+                    <div class="title">{{ settlement.text }}</div>
+                    <div class="desc">{{ settlement.date | date:'d MMM' }}</div>
+                </div>
+                <div class="right">
+                    <span class="money">{{ settlement.amount | number:'1.0-0':'de-DE' }} ден</span>
+                    @if (confirmingUndo() === settlement.id) {
+                        <span class="choices">
+                            <button class="btn-link danger" type="button" (click)="undoSettlement(settlement.id)">Yes, undo</button>
+                            <button class="btn-link" type="button" (click)="confirmingUndo.set(null)">Keep</button>
+                        </span>
+                    } @else {
+                        <button class="btn-link" type="button" (click)="confirmingUndo.set(settlement.id)"
+                            [attr.aria-label]="'Undo payment: ' + settlement.text">Undo</button>
+                    }
+                </div>
+            </div>
+        } @empty {
+            <p class="empty">This group has no settlements.</p>
         }
     </div>
 } @else {

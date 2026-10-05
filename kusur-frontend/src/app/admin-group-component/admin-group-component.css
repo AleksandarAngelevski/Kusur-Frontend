@@ -54,3 +54,54 @@ a.row:hover .title{
     font-size: 13px;
     color: var(--ink-soft);
 }
+
+.actions{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+.actions a{
+    text-decoration: none;
+}
+.btn-secondary{
+    display: inline-flex;
+    align-items: center;
+    background: none;
+    color: var(--ink);
+    border: 1px solid var(--paper-edge);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.btn-secondary:hover{
+    border-color: var(--ink-soft);
+}
+.choices{
+    display: flex;
+    gap: 12px;
+}
+.btn-link{
+    padding: 0;
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: 12px;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+.btn-link:hover{
+    color: var(--ink);
+}
+.btn-link.danger{
+    color: var(--debit);
+}
+.problem{
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--debit);
+    border-radius: var(--radius-sm);
+    background: var(--debit-bg);
+    font-size: 13px;
+}

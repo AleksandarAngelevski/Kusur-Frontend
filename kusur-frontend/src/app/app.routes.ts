@@ -82,6 +82,20 @@ export const routes: Routes = [
                 resolve: { allGroups: adminGroupsResolver }
             },
             {
+                path: 'admin/groups/:id/expenses/new',
+                component: ExpenseFormComponent,
+                canActivate: [adminGuard],
+                resolve: { allGroups: adminGroupsResolver },
+                data: { admin: true }
+            },
+            {
+                path: 'admin/groups/:id/settle',
+                component: SettleUpComponent,
+                canActivate: [adminGuard],
+                resolve: { allGroups: adminGroupsResolver },
+                data: { admin: true }
+            },
+            {
                 // the same form members use; `admin` sends it back to the admin view afterwards
                 path: 'admin/groups/:id/expenses/:expenseId/edit',
                 component: ExpenseFormComponent,

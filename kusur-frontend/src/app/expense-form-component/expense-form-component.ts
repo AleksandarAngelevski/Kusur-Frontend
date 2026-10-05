@@ -62,7 +62,7 @@ export class ExpenseFormComponent {
         date: new FormControl(toInputDate(this.original?.date ?? new Date()), {
             nonNullable: true, validators: Validators.required
         }),
-        paidById: new FormControl(this.original?.paidById ?? this.groups.meId(), { nonNullable: true }),
+        paidById: new FormControl(this.original?.paidById ?? this.defaultPayerId(), { nonNullable: true }),
     });
 
     splitMode = signal<SplitMode>(this.original?.customShares ? 'custom' : 'equal');
@@ -202,6 +202,13 @@ export class ExpenseFormComponent {
             .filter(([, amount]) => !!amount)
             .map(([memberId, amount]) => ({ memberId, amount: amount! }));
         return { splitBetweenIds: customShares.map((share) => share.memberId), customShares };
+    }
+
+    /** me when I am in the group; otherwise (an admin adding from outside) its first member */
+    private defaultPayerId(): number {
+        const members = this.group()?.members ?? [];
+        const meId = this.groups.meId();
+        return members.some((member) => member.id === meId) ? meId : (members[0]?.id ?? meId);
     }
 
     private validAmount(): number | null {

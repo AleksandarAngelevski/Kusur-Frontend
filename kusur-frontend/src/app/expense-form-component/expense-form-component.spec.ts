@@ -270,6 +270,25 @@ describe('ExpenseFormComponent', () => {
         });
     });
 
+    describe('adding as someone who is not in the group', () => {
+        beforeEach(async () => {
+            await open({ id: '1' }, { admin: true });
+            // as for an admin looking in from outside: my id matches nobody in the group; open the form afresh
+            vi.spyOn(groups, 'meId').mockReturnValue(999);
+            fixture = TestBed.createComponent(ExpenseFormComponent);
+            el = fixture.nativeElement;
+            await fixture.whenStable();
+        });
+
+        it('should default the payer to a member of the group, not to me', () => {
+            const select = el.querySelector<HTMLSelectElement>('#paidById')!;
+            // the group's first member (who the fake data happens to label "You")
+            expect(select.value).not.toBe('');
+            expect(select.options[select.selectedIndex].textContent?.trim()).toBe(groups.group(1)!.members[0].name);
+            expect(el.querySelector('.back')!.getAttribute('href')).toBe('/admin/groups/1');
+        });
+    });
+
     describe('when the group or expense does not exist', () => {
         it('should say the group is missing', async () => {
             await open({ id: '999' });

@@ -18,7 +18,11 @@ const differentPeople = (form: AbstractControl): ValidationErrors | null =>
 export class SettleUpComponent {
     private groups = inject(GroupsService);
     private router = inject(Router);
-    private groupId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
+    private route = inject(ActivatedRoute).snapshot;
+    private groupId = Number(this.route.paramMap.get('id'));
+
+    /** where Back, Cancel and a recorded payment lead: the group, or its admin view when an admin came from there */
+    backLink = this.route.data?.['admin'] ? ['/admin/groups', this.groupId] : ['/groups', this.groupId];
 
     private meId = this.groups.meId();
 
@@ -34,7 +38,7 @@ export class SettleUpComponent {
     hasSuggestion = !!this.suggestion;
 
     settleForm = new FormGroup({
-        fromId: new FormControl(this.suggestion?.fromId ?? this.meId, { nonNullable: true }),
+        fromId: new FormControl(this.suggestion?.fromId ?? this.defaultPayerId(), { nonNullable: true }),
         toId: new FormControl(this.suggestion?.toId ?? this.otherMemberId(), { nonNullable: true }),
         amount: new FormControl<number | null>(this.suggestion?.amount ?? null, [
             Validators.required, Validators.min(1), wholeNumber
@@ -55,7 +59,7 @@ export class SettleUpComponent {
 
         const { fromId, toId, amount } = this.settleForm.getRawValue();
         this.groups.addSettlement(this.groupId, { fromId, toId, amount: amount! }).subscribe({
-            next: () => this.router.navigate(['/groups', this.groupId]),
+            next: () => this.router.navigate(this.backLink),
             error: (err) => {
                 this.submitting.set(false);
                 this.errorMessage.set(apiErrorMessage(err));
@@ -76,7 +80,14 @@ export class SettleUpComponent {
         return amount.hasError('wholeNumber') ? 'Use whole denars, no decimals.' : 'Enter an amount above zero.';
     }
 
+    /** me when I am in the group; otherwise (an admin recording from outside) its first member */
+    private defaultPayerId(): number {
+        const members = this.group()?.members ?? [];
+        return members.some((member) => member.id === this.meId) ? this.meId : (members[0]?.id ?? this.meId);
+    }
+
     private otherMemberId(): number {
-        return this.group()?.members.find((member) => member.id !== this.meId)?.id ?? this.meId;
+        const payerId = this.defaultPayerId();
+        return this.group()?.members.find((member) => member.id !== payerId)?.id ?? payerId;
     }
 }

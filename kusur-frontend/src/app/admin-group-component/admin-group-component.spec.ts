@@ -3,8 +3,9 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 import { GroupDetails } from '../models/group.model';
 import { AdminApi } from '../services/admin.api';
+import { AuthService } from '../services/auth.service';
+import { GroupsApi } from '../services/groups.api';
 import { GroupsService } from '../services/groups.service';
-import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { AdminGroupComponent } from './admin-group-component';
 
 /** a group the signed-in admin (id 1) is not a member of */
@@ -18,7 +19,7 @@ const skiWeekend = (): GroupDetails => ({
         { id: 31, description: 'Cabin', amount: 12000, date: new Date(2026, 8, 5, 12), paidById: 7, splitBetweenIds: [7, 8] },
         { id: 32, description: 'Ski passes', amount: 8400, date: new Date(2026, 8, 6, 12), paidById: 6, splitBetweenIds: [6, 7, 8] },
     ],
-    settlements: [],
+    settlements: [{ id: 41, fromId: 8, toId: 7, amount: 3000, date: new Date(2026, 8, 7, 9) }],
 });
 
 describe('AdminGroupComponent', () => {
@@ -32,19 +33,33 @@ describe('AdminGroupComponent', () => {
         return parts.filter(Boolean).join(' ');
     };
 
+    /** the signed-in admin belongs to no group; the group they look at comes from the admin endpoint */
+    const api = {
+        me: () => of({ id: 1, username: 'ace', email: 'ace@example.com', role: 'ADMIN' }),
+        list: () => of([]),
+        deleteSettlement: vi.fn(() => of({ ...skiWeekend(), settlements: [] })),
+    };
+
+    const click = async (text: string) => {
+        Array.from(el.querySelectorAll('button')).find((button) => button.textContent!.trim() === text)!.click();
+        await fixture.whenStable();
+    };
+
     const open = async (id: string) => {
         await TestBed.configureTestingModule({
             imports: [AdminGroupComponent],
             providers: [
                 provideRouter([]),
-                provideFakeGroupsApi(),
                 { provide: AdminApi, useValue: { groups: () => of([skiWeekend()]) } },
+                { provide: GroupsApi, useValue: api },
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id }) } } },
             ],
         }).compileComponents();
 
-        loadFakeGroups('ADMIN');
-        TestBed.inject(GroupsService).loadAllGroups().subscribe();
+        TestBed.inject(AuthService).token.set('test.token');
+        const service = TestBed.inject(GroupsService);
+        service.load().subscribe();
+        service.loadAllGroups().subscribe();
         fixture = TestBed.createComponent(AdminGroupComponent);
         el = fixture.nativeElement;
         await fixture.whenStable();
@@ -69,6 +84,29 @@ describe('AdminGroupComponent', () => {
             '/admin/groups/9/expenses/32/edit',
             '/admin/groups/9/expenses/31/edit',
         ]);
+    });
+
+    it('should link to adding an expense and recording a settlement in that group', async () => {
+        await open('9');
+
+        expect(Array.from(el.querySelectorAll('.actions a')).map((a) => [a.textContent!.trim(), a.getAttribute('href')])).toEqual([
+            ['Add expense', '/admin/groups/9/expenses/new'],
+            ['Record settlement', '/admin/groups/9/settle'],
+        ]);
+    });
+
+    it('should list the settlements and undo one after a second click', async () => {
+        await open('9');
+        const settlementRows = () => Array.from(el.querySelectorAll('div.row')).map(words);
+        expect(settlementRows()).toEqual(['ana paid stefan 7 Sep 3.000 ден Undo']);
+
+        await click('Undo');
+        expect(api.deleteSettlement).not.toHaveBeenCalled();
+
+        await click('Yes, undo');
+        expect(api.deleteSettlement).toHaveBeenCalledWith(9, 41);
+        expect(settlementRows()).toEqual([]);
+        expect(el.textContent).toContain('This group has no settlements.');
     });
 
     it('should say so when the group does not exist', async () => {
