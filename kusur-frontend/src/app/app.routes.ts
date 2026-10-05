@@ -14,6 +14,7 @@ import { ResetPasswordComponent } from './reset-password-component/reset-passwor
 import { SettleUpComponent } from './settle-up-component/settle-up-component';
 import { ShellComponent } from './shell-component/shell-component';
 import { authGuard, guestGuard } from './shared/auth.guard';
+import { groupsResolver } from './shared/groups.resolver';
 
 
 export const routes: Routes = [
@@ -22,6 +23,7 @@ export const routes: Routes = [
         path: '',
         component: ShellComponent,
         canActivate: [authGuard],
+        resolve: { groups: groupsResolver },
         children: [
             {
                 path: '',

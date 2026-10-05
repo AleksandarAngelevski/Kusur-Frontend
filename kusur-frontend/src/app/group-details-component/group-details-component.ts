@@ -3,7 +3,8 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { GroupsService, ME_ID, memberName } from '../services/groups.service';
+import { GroupsService, memberName } from '../services/groups.service';
+import { apiErrorMessage } from '../shared/api-error';
 import { expenseShares, netBalances, simplifyDebts } from '../shared/balances';
 import { initials } from '../shared/initials';
 
@@ -32,8 +33,8 @@ export class GroupDetailsComponent {
     private groups = inject(GroupsService);
     private params = toSignal(inject(ActivatedRoute).paramMap);
 
-    protected readonly meId = ME_ID;
     protected readonly initials = initials;
+    private meId = this.groups.meId;
 
     group = computed(() => this.groups.group(Number(this.params()?.get('id'))));
 
@@ -42,7 +43,7 @@ export class GroupDetailsComponent {
         return group ? netBalances(group) : new Map<number, number>();
     });
 
-    myBalance = computed(() => this.net().get(ME_ID) ?? 0);
+    myBalance = computed(() => this.net().get(this.meId()) ?? 0);
 
     memberBalances = computed(() =>
         (this.group()?.members ?? []).map((member) => ({ member, balance: this.net().get(member.id) ?? 0 }))
@@ -52,7 +53,7 @@ export class GroupDetailsComponent {
     payments = computed(() =>
         simplifyDebts(this.net()).map((debt) => ({
             ...debt,
-            text: debt.fromId === ME_ID
+            text: debt.fromId === this.meId()
                 ? `You pay ${this.name(debt.toId)}`
                 : `${this.name(debt.fromId)} pays ${this.name(debt.toId, 'you')}`,
         }))
@@ -69,7 +70,7 @@ export class GroupDetailsComponent {
             title: expense.description,
             detail: `${this.name(expense.paidById)} paid`,
             amount: expense.amount,
-            myShare: expenseShares(expense).get(ME_ID),
+            myShare: expenseShares(expense).get(this.meId()),
             link: ['/groups', group.id, 'expenses', expense.id, 'edit'],
         }));
         const settlements = group.settlements.map((settlement): HistoryEntry => ({
@@ -89,10 +90,16 @@ export class GroupDetailsComponent {
     /** the settlement whose Undo is waiting for its second click */
     confirmingUndo = signal<number | null>(null);
 
+    undoError = signal('');
+
     undoSettlement(settlementId: number){
         const group = this.group();
-        if (group) this.groups.deleteSettlement(group.id, settlementId);
-        this.confirmingUndo.set(null);
+        if (!group) return;
+        this.undoError.set('');
+        this.groups.deleteSettlement(group.id, settlementId).subscribe({
+            next: () => this.confirmingUndo.set(null),
+            error: (err) => this.undoError.set(apiErrorMessage(err)),
+        });
     }
 
     memberForm = new FormGroup({ name: new FormControl('', { nonNullable: true }) });
@@ -104,20 +111,20 @@ export class GroupDetailsComponent {
         if (!group) return;
 
         if (!name) {
-            this.memberError.set('Enter a name.');
-            return;
-        }
-        if (!this.groups.addMember(group.id, name)) {
-            this.memberError.set(`${name} is already in this group.`);
+            this.memberError.set('Enter a username or email.');
             return;
         }
         this.memberError.set('');
-        this.memberForm.reset();
+        // the backend says when nobody has that username or email, or they are already in the group
+        this.groups.addMember(group.id, name).subscribe({
+            next: () => this.memberForm.reset(),
+            error: (err) => this.memberError.set(apiErrorMessage(err)),
+        });
     }
 
     /** "You" for the signed-in user (or the given wording mid-sentence), the member's name otherwise. */
     private name(id: number, me = 'You'): string {
-        if (id === ME_ID) return me;
+        if (id === this.meId()) return me;
         const group = this.group();
         return group ? memberName(group, id) : 'Someone';
     }

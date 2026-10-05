@@ -50,6 +50,10 @@
         }
     </div>
 
+    @if (errorMessage()) {
+        <p class="error" role="alert">{{ errorMessage() }}</p>
+    }
+
     <div class="danger-zone">
         @if (isOwner()) {
             @if (confirming() === 'delete') {

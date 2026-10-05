@@ -1,7 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GroupsService, ME_ID, memberName } from '../services/groups.service';
+import { GroupsService, memberName } from '../services/groups.service';
+import { apiErrorMessage } from '../shared/api-error';
 import { netBalances } from '../shared/balances';
 import { initials } from '../shared/initials';
 import { notBlank } from '../shared/validators';
@@ -18,11 +19,10 @@ export class GroupSettingsComponent {
     private router = inject(Router);
     private groupId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
 
-    protected readonly meId = ME_ID;
     protected readonly initials = initials;
 
     group = computed(() => this.groups.group(this.groupId));
-    isOwner = computed(() => this.group()?.ownerId === ME_ID);
+    isOwner = computed(() => this.group()?.ownerId === this.groups.meId());
     ownerName = computed(() => {
         const group = this.group();
         return group ? memberName(group, group.ownerId) : '';
@@ -42,7 +42,7 @@ export class GroupSettingsComponent {
         }))
     );
 
-    iAmSettled = computed(() => (this.net().get(ME_ID) ?? 0) === 0);
+    iAmSettled = computed(() => (this.net().get(this.groups.meId()) ?? 0) === 0);
 
     renameForm = new FormGroup({
         name: new FormControl(this.group()?.name ?? '', { nonNullable: true, validators: [Validators.required, notBlank] })
@@ -52,14 +52,16 @@ export class GroupSettingsComponent {
     /** which destructive action is waiting for its second click */
     confirming = signal<'delete' | 'leave' | null>(null);
 
+    /** why the last change was refused, from the backend */
+    errorMessage = signal('');
+
     rename(){
         this.renamed.set(false);
         if (this.renameForm.invalid) {
             this.renameForm.markAllAsTouched();
             return;
         }
-        this.groups.renameGroup(this.groupId, this.renameForm.controls.name.value);
-        this.renamed.set(true);
+        this.groups.renameGroup(this.groupId, this.renameForm.controls.name.value).subscribe(this.report(() => this.renamed.set(true)));
     }
 
     nameError(): string {
@@ -68,17 +70,26 @@ export class GroupSettingsComponent {
     }
 
     removeMember(memberId: number){
-        this.groups.removeMember(this.groupId, memberId);
+        this.groups.removeMember(this.groupId, memberId).subscribe(this.report());
     }
 
     deleteGroup(){
-        this.groups.deleteGroup(this.groupId);
-        this.router.navigate(['/groups']);
+        this.groups.deleteGroup(this.groupId).subscribe(this.report(() => this.router.navigate(['/groups'])));
     }
 
     leaveGroup(){
-        if (this.groups.leaveGroup(this.groupId)) {
-            this.router.navigate(['/groups']);
-        }
+        this.groups.leaveGroup(this.groupId).subscribe(this.report(() => this.router.navigate(['/groups'])));
+    }
+
+    /** An observer that clears the error and runs `then` on success, and shows the backend's message on failure. */
+    private report(then: () => void = () => {}){
+        this.errorMessage.set('');
+        return {
+            next: () => then(),
+            error: (err: unknown) => {
+                this.confirming.set(null);
+                this.errorMessage.set(apiErrorMessage(err));
+            }
+        };
     }
 }

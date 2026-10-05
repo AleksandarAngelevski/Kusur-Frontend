@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { GroupsService } from '../services/groups.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { GroupDetailsComponent } from './group-details-component';
 
 describe('GroupDetailsComponent', () => {
@@ -38,10 +39,12 @@ describe('GroupDetailsComponent', () => {
             imports: [GroupDetailsComponent],
             providers: [
                 provideRouter([]),
+                provideFakeGroupsApi(),
                 { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id })) } },
             ],
         }).compileComponents();
 
+        loadFakeGroups();
         fixture = TestBed.createComponent(GroupDetailsComponent);
         el = fixture.nativeElement;
         await fixture.whenStable();
@@ -89,7 +92,7 @@ describe('GroupDetailsComponent', () => {
         });
 
         it('should update when a settlement is recorded', async () => {
-            TestBed.inject(GroupsService).addSettlement(1, { fromId: 3, toId: 1, amount: 800, date: new Date() });
+            TestBed.inject(GroupsService).addSettlement(1, { fromId: 3, toId: 1, amount: 800 }).subscribe();
             await fixture.whenStable();
 
             expect(text('.netcard .big')).toEqual(['+400 ден']);
@@ -105,7 +108,7 @@ describe('GroupDetailsComponent', () => {
             };
 
             beforeEach(async () => {
-                TestBed.inject(GroupsService).addSettlement(1, { fromId: 3, toId: 1, amount: 800, date: new Date() });
+                TestBed.inject(GroupsService).addSettlement(1, { fromId: 3, toId: 1, amount: 800 }).subscribe();
                 await fixture.whenStable();
             });
 
@@ -143,12 +146,19 @@ describe('GroupDetailsComponent', () => {
             expect(el.querySelector<HTMLInputElement>('#new-member')!.value).toBe('');
         });
 
+        it('should show the backend\'s message when nobody has that username or email', async () => {
+            await addMember('nobody');
+
+            expect(text('.field-error')).toEqual(['No user with that username or email.']);
+            expect(el.querySelector<HTMLInputElement>('#new-member')!.value).toBe('nobody');
+        });
+
         it('should refuse an empty name and a duplicate', async () => {
             await addMember('   ');
-            expect(text('.field-error')).toEqual(['Enter a name.']);
+            expect(text('.field-error')).toEqual(['Enter a username or email.']);
 
             await addMember('petar');
-            expect(text('.field-error')).toEqual(['petar is already in this group.']);
+            expect(text('.field-error')).toEqual(['Petar is already in this group.']);
             expect(text('.group-header p')).toEqual(['4 members']);
         });
     });

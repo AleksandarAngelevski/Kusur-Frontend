@@ -1,5 +1,11 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { GroupsService, ME_ID } from './groups.service';
+import { throwError } from 'rxjs';
+import { GroupDetails } from '../models/group.model';
+import { loadFakeGroups, ME_ID, provideFakeGroupsApi } from '../testing/fake-groups-api';
+import { AuthService } from './auth.service';
+import { GroupsApi } from './groups.api';
+import { GroupsService } from './groups.service';
 
 describe('GroupsService', () => {
     let service: GroupsService;
@@ -7,10 +13,16 @@ describe('GroupsService', () => {
     const summary = (id: number) => service.groups().find((group) => group.id === id)!;
 
     beforeEach(() => {
-        service = TestBed.inject(GroupsService);
+        TestBed.configureTestingModule({ providers: [provideFakeGroupsApi()] });
+        service = loadFakeGroups();
     });
 
-    it('should summarise the dummy groups with my balance in each', () => {
+    it('should know who I am once loaded, and call me "You"', () => {
+        expect(service.meId()).toBe(ME_ID);
+        expect(service.group(1)!.members.map((member) => member.name)).toEqual(['You', 'Petar', 'Marija', 'Nikola']);
+    });
+
+    it('should summarise the groups with my balance in each', () => {
         expect(service.groups().map((group) => [group.name, group.memberCount, group.balance])).toEqual([
             ['Ohrid Trip', 4, 1200],
             ['Apartment', 3, -3500],
@@ -21,38 +33,65 @@ describe('GroupsService', () => {
         expect(service.group(999)).toBeUndefined();
     });
 
-    it('should create a group with me as its only member', () => {
-        const group = service.createGroup('  Ski weekend  ');
+    it('should add a created group to the list and hand it back', () => {
+        let created: GroupDetails | undefined;
+        service.createGroup('  Ski weekend  ').subscribe((group) => (created = group));
 
-        expect(group.name).toBe('Ski weekend');
-        expect(group.members).toEqual([{ id: ME_ID, name: 'You' }]);
-        expect(group.ownerId).toBe(ME_ID);
-        expect(summary(group.id)).toEqual({ id: group.id, name: 'Ski weekend', imageUrl: undefined, memberCount: 1, balance: 0 });
+        expect(created).toMatchObject({ name: 'Ski weekend', ownerId: ME_ID, members: [{ id: ME_ID, name: 'You' }] });
+        expect(summary(created!.id)).toMatchObject({ name: 'Ski weekend', memberCount: 1, balance: 0 });
     });
 
-    it('should add a member once and refuse the same name again', () => {
-        const group = service.createGroup('Ski weekend');
-
-        expect(service.addMember(group.id, 'Petar')).toBe(true);
-        expect(service.addMember(group.id, ' petar ')).toBe(false);
-        expect(service.group(group.id)!.members.map((member) => member.name)).toEqual(['You', 'Petar']);
-    });
-
-    it('should update my balance when an expense is added', () => {
+    it('should replace a group with the backend\'s answer after a change', () => {
         const other = service.group(1)!.members.find((member) => member.id !== ME_ID)!;
 
-        service.addExpense(1, { description: 'Dinner', amount: 400, date: new Date(), paidById: other.id, splitBetweenIds: [ME_ID, other.id] });
-
+        service.addExpense(1, { description: 'Dinner', amount: 400, date: new Date(), paidById: other.id, splitBetweenIds: [ME_ID, other.id] }).subscribe();
         expect(summary(1).balance).toBe(1000);
-        expect(service.group(1)!.expenses.at(-1)!.description).toBe('Dinner');
+
+        service.addSettlement(1, { fromId: other.id, toId: ME_ID, amount: 400 }).subscribe();
+        expect(summary(1).balance).toBe(600);
+
+        service.deleteSettlement(1, service.group(1)!.settlements[0].id).subscribe();
+        expect(summary(1).balance).toBe(1000);
+
+        service.renameGroup(1, ' Ohrid 2026 ').subscribe();
+        expect(summary(1).name).toBe('Ohrid 2026');
+        expect(summary(2).balance).toBe(-3500);
     });
 
-    it('should update my balance when a settlement is recorded', () => {
-        const other = service.group(1)!.members.find((member) => member.id !== ME_ID)!;
+    it('should update and delete an expense in place', () => {
+        const [fuel] = service.group(1)!.expenses;
 
-        service.addSettlement(1, { fromId: other.id, toId: ME_ID, amount: 400, date: new Date() });
+        service.updateExpense(1, fuel.id, { ...fuel, amount: 2000 }).subscribe();
+        expect(summary(1).balance).toBe(1500);
 
-        expect(summary(1).balance).toBe(800);
+        service.deleteExpense(1, fuel.id).subscribe();
+        expect(summary(1).balance).toBe(0);
+        expect(service.group(1)!.expenses.map((expense) => expense.description)).toEqual(['Boat tickets']);
+    });
+
+    it('should drop a group from the list when it is deleted', () => {
+        service.deleteGroup(1).subscribe();
+
+        expect(service.groups().map((group) => group.name)).toEqual(['Apartment']);
+    });
+
+    it('should keep the group and pass the error on when the backend refuses a change', () => {
+        let error: HttpErrorResponse | undefined;
+        service.leaveGroup(2).subscribe({ error: (err) => (error = err) });
+
+        expect(error?.error.message).toBe('Settle your balance in this group before you leave it.');
+        expect(service.groups().length).toBe(2);
+
+        service.removeMember(1, 3).subscribe({ error: (err) => (error = err) });
+        expect(error?.error.message).toBe('Marija still owes or is owed money. Settle up first.');
+        expect(service.group(1)!.members.length).toBe(4);
+    });
+
+    it('should keep a removed member\'s name for the history', () => {
+        service.removeMember(1, 2).subscribe();
+
+        expect(service.group(1)!.members.map((member) => member.name)).toEqual(['You', 'Marija', 'Nikola']);
+        expect(service.activity().some((entry) => entry.activity === 'Petar added Boat tickets')).toBe(true);
     });
 
     it('should list activity across groups, newest first', () => {
@@ -64,48 +103,42 @@ describe('GroupsService', () => {
     });
 
     it('should put a new settlement at the top of the activity', () => {
-        service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800, date: new Date() });
+        service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800 }).subscribe();
 
         expect(service.activity()[0]).toMatchObject({ activity: 'Marija settled up', groupName: 'Ohrid Trip', amount: 800 });
     });
 
-    it('should refuse to remove the owner or anyone who is not settled up', () => {
-        expect(service.removeMember(1, ME_ID)).toBe(false);
-        expect(service.removeMember(1, 3)).toBe(false);
-        expect(service.group(1)!.members.length).toBe(4);
-    });
+    it('should only fetch once, until someone signs out', () => {
+        const list = vi.spyOn(TestBed.inject(GroupsApi), 'list');
 
-    it('should refuse to let me leave a group I own or owe money in', () => {
-        expect(service.leaveGroup(1)).toBe(false);
-        expect(service.leaveGroup(2)).toBe(false);
+        service.ensureLoaded().subscribe();
+        expect(list).not.toHaveBeenCalled();
+
+        TestBed.inject(AuthService).logout();
+        TestBed.tick();
+        expect(service.groups()).toEqual([]);
+        expect(service.meId()).toBe(-1);
+
+        service.ensureLoaded().subscribe();
+        expect(list).toHaveBeenCalledTimes(1);
         expect(service.groups().length).toBe(2);
     });
 
-    it('should update and delete an expense in place', () => {
-        const [fuel] = service.group(1)!.expenses;
+    it('should report a failed load without failing, and recover on retry', () => {
+        TestBed.inject(AuthService).logout();
+        TestBed.tick();
+        const list = vi.spyOn(TestBed.inject(GroupsApi), 'list')
+            .mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 502 })));
 
-        service.updateExpense(1, fuel.id, { ...fuel, amount: 2000 });
-        expect(summary(1).balance).toBe(1500);
+        let completed = false;
+        service.ensureLoaded().subscribe({ complete: () => (completed = true) });
+        expect(completed).toBe(true);
+        expect(service.loadError()).toBe("Can't reach the server. Try again in a moment.");
+        expect(service.groups()).toEqual([]);
 
-        service.deleteExpense(1, fuel.id);
-        expect(summary(1).balance).toBe(0);
-        expect(service.group(1)!.expenses.map((expense) => expense.description)).toEqual(['Boat tickets']);
-    });
-
-    it('should restore the balance when a settlement is undone', () => {
-        service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800, date: new Date() });
-        const [settlement] = service.group(1)!.settlements;
-
-        service.deleteSettlement(1, settlement.id);
-
-        expect(summary(1).balance).toBe(1200);
-        expect(service.group(1)!.settlements).toEqual([]);
-        expect(service.activity().some((entry) => entry.activity === 'Marija settled up')).toBe(false);
-    });
-
-    it('should leave other groups alone', () => {
-        service.addExpense(1, { description: 'Dinner', amount: 400, date: new Date(), paidById: ME_ID, splitBetweenIds: [ME_ID] });
-
-        expect(summary(2).balance).toBe(-3500);
+        service.load().subscribe();
+        expect(list).toHaveBeenCalledTimes(2);
+        expect(service.loadError()).toBe('');
+        expect(service.groups().length).toBe(2);
     });
 });

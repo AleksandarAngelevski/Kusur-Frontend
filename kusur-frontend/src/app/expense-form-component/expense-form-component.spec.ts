@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { GroupsService } from '../services/groups.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { ExpenseFormComponent } from './expense-form-component';
 
 describe('ExpenseFormComponent', () => {
@@ -55,11 +56,12 @@ describe('ExpenseFormComponent', () => {
             imports: [ExpenseFormComponent],
             providers: [
                 provideRouter([]),
+                provideFakeGroupsApi(),
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(params) } } },
             ],
         }).compileComponents();
 
-        groups = TestBed.inject(GroupsService);
+        groups = loadFakeGroups();
         navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         fixture = TestBed.createComponent(ExpenseFormComponent);
         el = fixture.nativeElement;
@@ -240,7 +242,7 @@ describe('ExpenseFormComponent', () => {
                 ...groups.group(1)!.expenses[0],
                 customShares: [{ memberId: 1, amount: 600 }, { memberId: 2, amount: 1000 }],
                 splitBetweenIds: [1, 2],
-            });
+            }).subscribe();
             fixture = TestBed.createComponent(ExpenseFormComponent);
             el = fixture.nativeElement;
             await fixture.whenStable();

@@ -3,8 +3,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
 import { Expense } from '../models/group.model';
-import { GroupsService, ME_ID } from '../services/groups.service';
+import { GroupsService } from '../services/groups.service';
+import { apiErrorMessage } from '../shared/api-error';
 import { splitEqually } from '../shared/balances';
 import { notBlank, wholeNumber } from '../shared/validators';
 
@@ -56,7 +58,7 @@ export class ExpenseFormComponent {
         date: new FormControl(toInputDate(this.original?.date ?? new Date()), {
             nonNullable: true, validators: Validators.required
         }),
-        paidById: new FormControl(this.original?.paidById ?? ME_ID, { nonNullable: true }),
+        paidById: new FormControl(this.original?.paidById ?? this.groups.meId(), { nonNullable: true }),
     });
 
     splitMode = signal<SplitMode>(this.original?.customShares ? 'custom' : 'equal');
@@ -71,6 +73,9 @@ export class ExpenseFormComponent {
 
     submitted = signal(false);
     confirmingDelete = signal(false);
+    /** a save or delete is on its way to the backend */
+    saving = signal(false);
+    errorMessage = signal('');
 
     private amount = toSignal(this.expenseForm.controls.amount.valueChanges, {
         initialValue: this.expenseForm.controls.amount.value
@@ -122,18 +127,27 @@ export class ExpenseFormComponent {
             ...this.split(),
         };
 
-        if (this.original) {
-            this.groups.updateExpense(this.groupId, this.original.id, expense);
-        } else {
-            this.groups.addExpense(this.groupId, expense);
-        }
-        this.router.navigate(['/groups', this.groupId]);
+        this.send(this.original
+            ? this.groups.updateExpense(this.groupId, this.original.id, expense)
+            : this.groups.addExpense(this.groupId, expense));
     }
 
     deleteExpense(){
         if (!this.original) return;
-        this.groups.deleteExpense(this.groupId, this.original.id);
-        this.router.navigate(['/groups', this.groupId]);
+        this.send(this.groups.deleteExpense(this.groupId, this.original.id));
+    }
+
+    /** Runs a change against the backend, then goes back to the group; a failure stays on the page with its message. */
+    private send(change: Observable<unknown>){
+        this.saving.set(true);
+        this.errorMessage.set('');
+        change.subscribe({
+            next: () => this.router.navigate(['/groups', this.groupId]),
+            error: (err) => {
+                this.saving.set(false);
+                this.errorMessage.set(apiErrorMessage(err));
+            }
+        });
     }
 
     descriptionError(): string {

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { GroupsService } from '../services/groups.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { CreateGroupComponent } from './create-group-component';
 
 describe('CreateGroupComponent', () => {
@@ -28,10 +29,10 @@ describe('CreateGroupComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [CreateGroupComponent],
-            providers: [provideRouter([])],
+            providers: [provideRouter([]), provideFakeGroupsApi()],
         }).compileComponents();
 
-        groups = TestBed.inject(GroupsService);
+        groups = loadFakeGroups();
         navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         fixture = TestBed.createComponent(CreateGroupComponent);
         el = fixture.nativeElement;

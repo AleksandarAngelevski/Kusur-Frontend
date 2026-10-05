@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { GroupsService } from '../services/groups.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { GroupSettingsComponent } from './group-settings-component';
 
 describe('GroupSettingsComponent', () => {
@@ -40,11 +41,12 @@ describe('GroupSettingsComponent', () => {
             imports: [GroupSettingsComponent],
             providers: [
                 provideRouter([]),
+                provideFakeGroupsApi(),
                 { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap({ id: String(id) }) } } },
             ],
         }).compileComponents();
 
-        groups = TestBed.inject(GroupsService);
+        groups = loadFakeGroups();
         setup(groups);
         navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         fixture = TestBed.createComponent(GroupSettingsComponent);
@@ -124,7 +126,7 @@ describe('GroupSettingsComponent', () => {
     });
 
     describe('in a group someone else owns, once I am settled', () => {
-        beforeEach(() => open(2, (service) => service.addSettlement(2, { fromId: 1, toId: 5, amount: 3500, date: new Date() })));
+        beforeEach(() => open(2, (service) => service.addSettlement(2, { fromId: 1, toId: 5, amount: 3500 }).subscribe()));
 
         it('should let me leave after a second click, which drops the group from my list', async () => {
             await click('Leave group');

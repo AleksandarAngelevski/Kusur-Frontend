@@ -13,8 +13,11 @@
             <p class="field-error" id="name-error">{{ nameError() }}</p>
         }
     </div>
+    @if (errorMessage()) {
+        <p class="error" role="alert">{{ errorMessage() }}</p>
+    }
     <div class="form-actions">
-        <button class="btn-primary" type="submit">Create group</button>
+        <button class="btn-primary" type="submit" [disabled]="submitting()">Create group</button>
         <a routerLink="/groups">Cancel</a>
     </div>
 </form>

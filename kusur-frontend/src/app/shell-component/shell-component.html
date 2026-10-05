@@ -1,4 +1,10 @@
 <div class="shell-content">
+    @if (groups.loadError()) {
+        <div class="load-error" role="alert">
+            <span>{{ groups.loadError() }}</span>
+            <button type="button" (click)="retry()">Try again</button>
+        </div>
+    }
     <router-outlet></router-outlet>
 </div>
 <app-nav-bar-component></app-nav-bar-component>

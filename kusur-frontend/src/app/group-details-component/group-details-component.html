@@ -72,7 +72,7 @@
     <form class="add-member" [formGroup]="memberForm" (ngSubmit)="addMember()">
         <label for="new-member">Add a member</label>
         <div class="add-member-row">
-            <input id="new-member" type="text" formControlName="name" placeholder="Name" autocomplete="off"
+            <input id="new-member" type="text" formControlName="name" placeholder="Username or email" autocomplete="off"
                 [attr.aria-invalid]="memberError() ? 'true' : null"
                 [attr.aria-describedby]="memberError() ? 'new-member-error' : null" />
             <button class="btn-secondary" type="submit">Add</button>
@@ -107,6 +107,9 @@
                             <span role="alert">Undo this payment? The balances go back to what they were.</span>
                             <button class="btn-link danger" type="button" (click)="undoSettlement(settlementId)">Yes, undo it</button>
                             <button class="btn-link" type="button" (click)="confirmingUndo.set(null)">Keep it</button>
+                            @if (undoError()) {
+                                <span class="field-error" role="alert">{{ undoError() }}</span>
+                            }
                         } @else {
                             <button class="btn-link" type="button" (click)="confirmingUndo.set(settlementId)"
                                 [attr.aria-label]="'Undo payment: ' + entry.title">Undo</button>

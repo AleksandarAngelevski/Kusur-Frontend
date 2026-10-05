@@ -45,8 +45,11 @@
                     <p class="field-error" id="amount-error">{{ amountError() }}</p>
                 }
             </div>
+            @if (errorMessage()) {
+                <p class="error" role="alert">{{ errorMessage() }}</p>
+            }
             <div class="form-actions">
-                <button class="btn-primary" type="submit">Record payment</button>
+                <button class="btn-primary" type="submit" [disabled]="submitting()">Record payment</button>
                 <a [routerLink]="['/groups', group.id]">Cancel</a>
             </div>
         </form>

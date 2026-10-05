@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { GroupsService } from '../services/groups.service';
+import { apiErrorMessage } from '../shared/api-error';
 import { notBlank } from '../shared/validators';
 
 @Component({
@@ -18,14 +19,25 @@ export class CreateGroupComponent {
         name: new FormControl('', { nonNullable: true, validators: [Validators.required, notBlank] })
     });
 
+    submitting = signal(false);
+    errorMessage = signal('');
+
     onSubmit(){
         if (this.groupForm.invalid) {
             this.groupForm.markAllAsTouched();
             return;
         }
 
-        const group = this.groups.createGroup(this.groupForm.controls.name.value);
-        this.router.navigate(['/groups', group.id]);
+        this.submitting.set(true);
+        this.errorMessage.set('');
+
+        this.groups.createGroup(this.groupForm.controls.name.value).subscribe({
+            next: (group) => this.router.navigate(['/groups', group.id]),
+            error: (err) => {
+                this.submitting.set(false);
+                this.errorMessage.set(apiErrorMessage(err));
+            }
+        });
     }
 
     nameError(): string {

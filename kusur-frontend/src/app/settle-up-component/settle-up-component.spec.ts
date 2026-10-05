@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { GroupsService } from '../services/groups.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { SettleUpComponent } from './settle-up-component';
 
 describe('SettleUpComponent', () => {
@@ -46,11 +47,12 @@ describe('SettleUpComponent', () => {
             imports: [SettleUpComponent],
             providers: [
                 provideRouter([]),
+                provideFakeGroupsApi(),
                 { provide: ActivatedRoute, useValue: { snapshot: { get paramMap() { return convertToParamMap({ id: routeId }); } } } },
             ],
         }).compileComponents();
 
-        groups = TestBed.inject(GroupsService);
+        groups = loadFakeGroups();
         routeId = String(id(groups));
         navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
         fixture = TestBed.createComponent(SettleUpComponent);
@@ -96,7 +98,11 @@ describe('SettleUpComponent', () => {
     });
 
     describe('for a group with only me in it', () => {
-        beforeEach(() => open((service) => service.createGroup('Solo').id));
+        beforeEach(() => open((service) => {
+            let id = 0;
+            service.createGroup('Solo').subscribe((group) => (id = group.id));
+            return id;
+        }));
 
         it('should ask for another member instead of showing the form', () => {
             expect(el.querySelector('.lead')!.textContent).toContain('Add another member');

@@ -98,8 +98,11 @@
                 <p class="field-error" id="split-error" role="alert">{{ splitError() }}</p>
             }
         </fieldset>
+        @if (errorMessage()) {
+            <p class="error" role="alert">{{ errorMessage() }}</p>
+        }
         <div class="form-actions">
-            <button class="btn-primary" type="submit">{{ isEdit ? 'Save changes' : 'Add expense' }}</button>
+            <button class="btn-primary" type="submit" [disabled]="saving()">{{ isEdit ? 'Save changes' : 'Add expense' }}</button>
             <a [routerLink]="['/groups', group.id]">Cancel</a>
         </div>
     </form>
@@ -109,7 +112,7 @@
             @if (confirmingDelete()) {
                 <p role="alert">Delete this expense? Everyone's balances will change.</p>
                 <div class="form-actions">
-                    <button class="btn-danger" type="button" (click)="deleteExpense()">Yes, delete it</button>
+                    <button class="btn-danger" type="button" [disabled]="saving()" (click)="deleteExpense()">Yes, delete it</button>
                     <button class="btn-link" type="button" (click)="confirmingDelete.set(false)">Keep it</button>
                 </div>
             } @else {

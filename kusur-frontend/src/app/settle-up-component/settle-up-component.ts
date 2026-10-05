@@ -1,7 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { GroupsService, ME_ID } from '../services/groups.service';
+import { GroupsService } from '../services/groups.service';
+import { apiErrorMessage } from '../shared/api-error';
 import { netBalances, simplifyDebts } from '../shared/balances';
 import { wholeNumber } from '../shared/validators';
 
@@ -19,24 +20,29 @@ export class SettleUpComponent {
     private router = inject(Router);
     private groupId = Number(inject(ActivatedRoute).snapshot.paramMap.get('id'));
 
+    private meId = this.groups.meId();
+
     group = computed(() => this.groups.group(this.groupId));
 
     /** start from the payment the group most needs: one of mine if I have any, else the first suggested */
     private suggestion = (() => {
         const group = this.group();
         const debts = group ? simplifyDebts(netBalances(group)) : [];
-        return debts.find((debt) => debt.fromId === ME_ID || debt.toId === ME_ID) ?? debts[0];
+        return debts.find((debt) => debt.fromId === this.meId || debt.toId === this.meId) ?? debts[0];
     })();
 
     hasSuggestion = !!this.suggestion;
 
     settleForm = new FormGroup({
-        fromId: new FormControl(this.suggestion?.fromId ?? ME_ID, { nonNullable: true }),
+        fromId: new FormControl(this.suggestion?.fromId ?? this.meId, { nonNullable: true }),
         toId: new FormControl(this.suggestion?.toId ?? this.otherMemberId(), { nonNullable: true }),
         amount: new FormControl<number | null>(this.suggestion?.amount ?? null, [
             Validators.required, Validators.min(1), wholeNumber
         ]),
     }, { validators: differentPeople });
+
+    submitting = signal(false);
+    errorMessage = signal('');
 
     onSubmit(){
         if (this.settleForm.invalid) {
@@ -44,9 +50,17 @@ export class SettleUpComponent {
             return;
         }
 
+        this.submitting.set(true);
+        this.errorMessage.set('');
+
         const { fromId, toId, amount } = this.settleForm.getRawValue();
-        this.groups.addSettlement(this.groupId, { fromId, toId, amount: amount!, date: new Date() });
-        this.router.navigate(['/groups', this.groupId]);
+        this.groups.addSettlement(this.groupId, { fromId, toId, amount: amount! }).subscribe({
+            next: () => this.router.navigate(['/groups', this.groupId]),
+            error: (err) => {
+                this.submitting.set(false);
+                this.errorMessage.set(apiErrorMessage(err));
+            }
+        });
     }
 
     peopleError(): string {
@@ -63,6 +77,6 @@ export class SettleUpComponent {
     }
 
     private otherMemberId(): number {
-        return this.group()?.members.find((member) => member.id !== ME_ID)?.id ?? ME_ID;
+        return this.group()?.members.find((member) => member.id !== this.meId)?.id ?? this.meId;
     }
 }

@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { RecentActivityComponent } from './recent-activity-component';
 
 describe('RecentActivityComponent', () => {
@@ -10,7 +11,10 @@ describe('RecentActivityComponent', () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             imports: [RecentActivityComponent],
+            providers: [provideFakeGroupsApi()],
         }).compileComponents();
+
+        loadFakeGroups();
 
         fixture = TestBed.createComponent(RecentActivityComponent);
         component = fixture.componentInstance;
