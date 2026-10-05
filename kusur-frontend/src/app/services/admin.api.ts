@@ -36,6 +36,14 @@ export class AdminApi {
         return this.http.patch<AdminUser>(`/api/admin/users/${userId}/role`, { role });
     }
 
+    /**
+     * Deletes an account. The backend scrubs it rather than removing its history: its groups pass to
+     * another member (or go, if it was alone in them) and its expenses stay under "Deleted user".
+     */
+    deleteUser(userId: number): Observable<void> {
+        return this.http.delete<void>(`/api/admin/users/${userId}`);
+    }
+
     /** every group, including ones the admin is not a member of */
     groups(): Observable<AdminGroup[]> {
         return this.http.get<AdminGroup[]>('/api/admin/groups');

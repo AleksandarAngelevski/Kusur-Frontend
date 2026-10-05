@@ -1,6 +1,6 @@
 <header class="admin-header">
     <h1>Admin</h1>
-    <p>Every account and every group, including ones you are not in.</p>
+    <p>Every account and every group, including ones you are not in. Deleting an account keeps its past expenses in other people's groups, under "Deleted user".</p>
 </header>
 
 @if (errorMessage()) {
@@ -30,12 +30,22 @@
                     </div>
                     <div class="desc">{{ user.email }}</div>
                 </div>
-                <!-- the backend refuses to let an admin demote themselves, so the button is left out for you -->
+                <!-- the backend refuses to let an admin demote or delete themselves, so the buttons are left out for you -->
                 @if (user.id !== meId()) {
                     <div class="right">
-                        <button class="btn-link" type="button" (click)="toggleRole(user)">
-                            {{ user.role === 'ADMIN' ? 'Remove admin' : 'Make admin' }}
-                        </button>
+                        @if (confirmingUserDelete() === user.id) {
+                            <span class="confirm" role="alert">Delete this account for good?</span>
+                            <span class="choices">
+                                <button class="btn-link danger" type="button" (click)="deleteUser(user.id)">Yes, delete</button>
+                                <button class="btn-link" type="button" (click)="confirmingUserDelete.set(null)">Keep</button>
+                            </span>
+                        } @else {
+                            <button class="btn-link" type="button" (click)="toggleRole(user)">
+                                {{ user.role === 'ADMIN' ? 'Remove admin' : 'Make admin' }}
+                            </button>
+                            <button class="btn-link danger" type="button" (click)="confirmingUserDelete.set(user.id)"
+                                [attr.aria-label]="'Delete account ' + user.username">Delete account</button>
+                        }
                     </div>
                 }
             </div>

@@ -26,6 +26,8 @@ export class AdminComponent {
 
     /** the group whose Delete is waiting for its second click */
     confirmingDelete = signal<number | null>(null);
+    /** the user whose Delete is waiting for its second click */
+    confirmingUserDelete = signal<number | null>(null);
 
     groups = computed(() =>
         this.allGroups().map((group) => ({
@@ -63,6 +65,26 @@ export class AdminComponent {
         this.api.setRole(user.id, user.role === 'ADMIN' ? 'USER' : 'ADMIN').subscribe({
             next: (updated) => this.users.update((users) => users.map((u) => (u.id === updated.id ? updated : u))),
             error: (err) => this.errorMessage.set(apiErrorMessage(err)),
+        });
+    }
+
+    deleteUser(userId: number){
+        this.errorMessage.set('');
+        this.api.deleteUser(userId).subscribe({
+            next: () => {
+                this.confirmingUserDelete.set(null);
+                this.users.update((users) => users.filter((user) => user.id !== userId));
+                // their groups changed hands or went with them, here and possibly in my own list
+                this.api.groups().subscribe({
+                    next: (groups) => this.allGroups.set(groups),
+                    error: (err) => this.errorMessage.set(apiErrorMessage(err)),
+                });
+                this.groupsService.load().subscribe();
+            },
+            error: (err) => {
+                this.confirmingUserDelete.set(null);
+                this.errorMessage.set(apiErrorMessage(err));
+            }
         });
     }
 

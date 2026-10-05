@@ -20,7 +20,7 @@ const groups = (): AdminGroup[] => [
 describe('AdminComponent', () => {
     let fixture: ComponentFixture<AdminComponent>;
     let el: HTMLElement;
-    let api: { users: ReturnType<typeof vi.fn>; groups: ReturnType<typeof vi.fn>; setRole: ReturnType<typeof vi.fn>; deleteGroup: ReturnType<typeof vi.fn> };
+    let api: Record<'users' | 'groups' | 'setRole' | 'deleteUser' | 'deleteGroup', ReturnType<typeof vi.fn>>;
 
     const words = (node: Element) => {
         const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
@@ -57,6 +57,7 @@ describe('AdminComponent', () => {
             users: vi.fn(() => of(users())),
             groups: vi.fn(() => of(groups())),
             setRole: vi.fn((id: number, role: 'USER' | 'ADMIN') => of({ ...users().find((user) => user.id === id)!, role })),
+            deleteUser: vi.fn(() => of(undefined)),
             deleteGroup: vi.fn(() => of(undefined)),
         };
     });
@@ -66,8 +67,8 @@ describe('AdminComponent', () => {
 
         expect(rows('Users')).toEqual([
             'AC ace you Admin ace@example.com',
-            'PE petar petar@example.com Make admin',
-            'MA marija Admin marija@example.com Remove admin',
+            'PE petar petar@example.com Make admin Delete account',
+            'MA marija Admin marija@example.com Remove admin Delete account',
         ]);
     });
 
@@ -85,11 +86,45 @@ describe('AdminComponent', () => {
 
         await click('Make admin');
         expect(api.setRole).toHaveBeenCalledWith(2, 'ADMIN');
-        expect(rows('Users')[1]).toBe('PE petar Admin petar@example.com Remove admin');
+        expect(rows('Users')[1]).toBe('PE petar Admin petar@example.com Remove admin Delete account');
 
         await click('Remove admin');
         expect(api.setRole).toHaveBeenLastCalledWith(2, 'USER');
-        expect(rows('Users')[1]).toBe('PE petar petar@example.com Make admin');
+        expect(rows('Users')[1]).toBe('PE petar petar@example.com Make admin Delete account');
+    });
+
+    it('should only delete an account after a second click, then refresh the groups', async () => {
+        await open();
+        const reload = vi.spyOn(TestBed.inject(GroupsApi), 'list');
+        // once the account is gone, the group it owned has passed to someone else
+        api.groups.mockReturnValue(of([{ ...groups()[1], ownerId: 2 }]));
+
+        await click('Delete account');
+        expect(api.deleteUser).not.toHaveBeenCalled();
+        expect(rows('Users')[1]).toBe('PE petar petar@example.com Delete this account for good? Yes, delete Keep');
+
+        await click('Keep');
+        await click('Delete account', 1);
+        await click('Yes, delete');
+
+        expect(api.deleteUser).toHaveBeenCalledWith(3);
+        expect(rows('Users')).toEqual([
+            'AC ace you Admin ace@example.com',
+            'PE petar petar@example.com Make admin Delete account',
+        ]);
+        expect(rows('Groups')).toEqual(['SW Ski weekend Owned by petar · 1 member · 1 expense Delete']);
+        expect(reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('should keep the account and show why when the backend refuses to delete it', async () => {
+        api.deleteUser.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 409, error: { message: 'You cannot delete your own account. Ask another admin to do it.' } })));
+        await open();
+
+        await click('Delete account');
+        await click('Yes, delete');
+
+        expect(el.querySelector('.problem')!.textContent).toContain('You cannot delete your own account.');
+        expect(rows('Users').length).toBe(3);
     });
 
     it('should only delete a group after a second click, then refresh my own groups', async () => {
@@ -115,7 +150,7 @@ describe('AdminComponent', () => {
         await click('Make admin');
 
         expect(el.querySelector('.problem')!.textContent).toContain('Only an admin can do that.');
-        expect(rows('Users')[1]).toBe('PE petar petar@example.com Make admin');
+        expect(rows('Users')[1]).toBe('PE petar petar@example.com Make admin Delete account');
     });
 
     it('should say when the data cannot be loaded, and load it on Reload', async () => {
