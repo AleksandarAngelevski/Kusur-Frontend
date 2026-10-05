@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { LoginRequest, LoginResponse } from '../models/auth.model';
+import { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
 
 const TOKEN_KEY = 'token';
 
@@ -14,6 +14,13 @@ export class AuthService {
 
     login(request: LoginRequest): Observable<LoginResponse> {
         return this.http.post<LoginResponse>('/api/auth/login', request).pipe(
+            tap((response) => this.saveToken(response.token))
+        );
+    }
+
+    /** The backend signs the new user in straight away, so register answers with a token like login does. */
+    register(request: RegisterRequest): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>('/api/auth/register', request).pipe(
             tap((response) => this.saveToken(response.token))
         );
     }

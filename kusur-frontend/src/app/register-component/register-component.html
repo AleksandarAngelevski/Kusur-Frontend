@@ -1,0 +1,60 @@
+<div class="authCard">
+    <div class="header">
+        <span class="logo">
+            <svg class="logoImage" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <circle cx="9" cy="12" r="6"/>
+                <circle cx="15" cy="12" r="6"/>
+            </svg>
+            kusur
+        </span>
+        <div class="motto">
+            <span>split bills, keep friends</span>
+        </div>
+    </div>
+    <div class="tear"></div>
+    <div class="main">
+        <div class="mainContentHeader">
+            <h1>Create your account</h1>
+            <p>Start splitting with your friends.</p>
+        </div>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="form-group" [class.invalid]="usernameError()">
+                <label for="username">Username</label>
+                <input id="username" type="text" formControlName="username" autocomplete="username"
+                    [attr.aria-invalid]="usernameError() ? 'true' : null"
+                    [attr.aria-describedby]="usernameError() ? 'username-error' : null" />
+            </div>
+            @if (usernameError()) {
+                <p class="field-error" id="username-error">{{ usernameError() }}</p>
+            }
+            <div class="form-group" [class.invalid]="emailError()">
+                <label for="email">Email</label>
+                <input id="email" type="email" formControlName="email" autocomplete="email"
+                    [attr.aria-invalid]="emailError() ? 'true' : null"
+                    [attr.aria-describedby]="emailError() ? 'email-error' : null" />
+            </div>
+            @if (emailError()) {
+                <p class="field-error" id="email-error">{{ emailError() }}</p>
+            }
+            <div class="form-group" [class.invalid]="passwordError()">
+                <label for="password">Password</label>
+                <input id="password" type="password" formControlName="password" autocomplete="new-password"
+                    [attr.aria-invalid]="passwordError() ? 'true' : null"
+                    [attr.aria-describedby]="passwordError() ? 'password-error' : null" />
+            </div>
+            @if (passwordError()) {
+                <p class="field-error" id="password-error">{{ passwordError() }}</p>
+            }
+            @if (errorMessage()) {
+                <p class="error" role="alert">{{ errorMessage() }}</p>
+            }
+            <button type="submit" [disabled]="submitting()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M9 6l6 6-6 6"/>
+                </svg>
+                {{ submitting() ? 'Creating account…' : 'Create account' }}
+            </button>
+        </form>
+        <p class="footer">Already have an account? <a routerLink="/login">Sign in</a></p>
+    </div>
+</div>

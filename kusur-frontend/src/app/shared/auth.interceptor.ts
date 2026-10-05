@@ -8,8 +8,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
-    // the login call has no token yet, and a 401 there just means wrong credentials
-    if (req.url.endsWith('/auth/login')) {
+    // login and register have no token yet, and a 401 there just means the request was rejected
+    if (req.url.endsWith('/auth/login') || req.url.endsWith('/auth/register')) {
         return next(req);
     }
 

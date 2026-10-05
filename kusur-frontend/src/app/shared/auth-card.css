@@ -1,4 +1,4 @@
-/* The login page uses its own light "paper" palette, separate from the app's dark tokens. */
+/* Shared by the login and register pages: a light "paper" palette, separate from the app's dark tokens. */
 :host{
     --l-till: #211C18;
     --l-paper: #FBF8EF;
@@ -24,7 +24,7 @@
     color: var(--l-ink);
 }
 
-.loginForm{
+.authCard{
     width: 300px;
     border: 1px solid var(--l-edge);
     border-radius: 10px;
