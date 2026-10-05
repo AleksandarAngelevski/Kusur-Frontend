@@ -12,7 +12,10 @@ export interface Member{
     name: string;
 }
 
-/** Amounts are whole denars. An expense is split equally between splitBetweenIds. */
+/**
+ * Amounts are whole denars. An expense is split equally between splitBetweenIds,
+ * unless customShares gives each person their own amount (adding up to the total).
+ */
 export interface Expense{
     id: number;
     description: string;
@@ -20,6 +23,7 @@ export interface Expense{
     date: Date;
     paidById: number;
     splitBetweenIds: number[];
+    customShares?: { memberId: number; amount: number }[];
 }
 
 /** A payment from one member to another that pays down what they owe. */

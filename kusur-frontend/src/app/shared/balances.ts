@@ -1,4 +1,4 @@
-import { Debt, GroupDetails } from '../models/group.model';
+import { Debt, Expense, GroupDetails } from '../models/group.model';
 
 /**
  * Splits a whole amount equally. Leftover denars go one each to the lowest
@@ -15,6 +15,13 @@ export function splitEqually(amount: number, memberIds: number[]): Map<number, n
     return shares;
 }
 
+/** What each person owes for an expense: their custom amount if it has them, an equal share otherwise. */
+export function expenseShares(expense: Pick<Expense, 'amount' | 'splitBetweenIds' | 'customShares'>): Map<number, number> {
+    return expense.customShares
+        ? new Map(expense.customShares.map((share) => [share.memberId, share.amount]))
+        : splitEqually(expense.amount, expense.splitBetweenIds);
+}
+
 /** Net position per member: positive is owed money, negative owes money. The values always sum to zero. */
 export function netBalances(group: Pick<GroupDetails, 'members' | 'expenses' | 'settlements'>): Map<number, number> {
     const net = new Map<number, number>(group.members.map((member) => [member.id, 0]));
@@ -22,7 +29,7 @@ export function netBalances(group: Pick<GroupDetails, 'members' | 'expenses' | '
 
     for (const expense of group.expenses) {
         add(expense.paidById, expense.amount);
-        splitEqually(expense.amount, expense.splitBetweenIds).forEach((share, id) => add(id, -share));
+        expenseShares(expense).forEach((share, id) => add(id, -share));
     }
     for (const settlement of group.settlements) {
         add(settlement.fromId, settlement.amount);

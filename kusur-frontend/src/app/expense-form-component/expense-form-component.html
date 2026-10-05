@@ -1,0 +1,120 @@
+@if (notFound) {
+    <a class="back" routerLink="/groups">‹ Groups</a>
+    <h1>{{ group() ? 'Expense not found' : 'Group not found' }}</h1>
+    <p class="lead">It may have been deleted, or the link is wrong.</p>
+} @else if (group(); as group) {
+    <a class="back" [routerLink]="['/groups', group.id]">‹ {{ group.name }}</a>
+
+    <h1>{{ isEdit ? 'Edit expense' : 'Add expense' }}</h1>
+    <p class="lead">Split it equally, or give each person their own amount.</p>
+
+    <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
+        <div class="field">
+            <label for="description">Description</label>
+            <input id="description" type="text" formControlName="description" autocomplete="off"
+                [attr.aria-invalid]="descriptionError() ? 'true' : null"
+                [attr.aria-describedby]="descriptionError() ? 'description-error' : null" />
+            @if (descriptionError()) {
+                <p class="field-error" id="description-error">{{ descriptionError() }}</p>
+            }
+        </div>
+        <div class="field">
+            <label for="amount">Amount (ден)</label>
+            <input id="amount" type="number" inputmode="numeric" min="1" step="1" formControlName="amount"
+                [attr.aria-invalid]="amountError() ? 'true' : null"
+                [attr.aria-describedby]="amountError() ? 'amount-error' : null" />
+            @if (amountError()) {
+                <p class="field-error" id="amount-error">{{ amountError() }}</p>
+            }
+        </div>
+        <div class="field">
+            <label for="date">Date</label>
+            <input id="date" type="date" formControlName="date"
+                [attr.aria-invalid]="dateError() ? 'true' : null"
+                [attr.aria-describedby]="dateError() ? 'date-error' : null" />
+            @if (dateError()) {
+                <p class="field-error" id="date-error">{{ dateError() }}</p>
+            }
+        </div>
+        <div class="field">
+            <label for="paidById">Paid by</label>
+            <select id="paidById" formControlName="paidById">
+                @for (member of group.members; track member.id) {
+                    <option [ngValue]="member.id">{{ member.name }}</option>
+                }
+            </select>
+        </div>
+        <fieldset [attr.aria-describedby]="splitError() ? 'split-error' : null">
+            <legend>Split</legend>
+            <div class="modes">
+                <label class="mode">
+                    <input type="radio" name="splitMode" [checked]="splitMode() === 'equal'" (change)="splitMode.set('equal')" />
+                    Equally
+                </label>
+                <label class="mode">
+                    <input type="radio" name="splitMode" [checked]="splitMode() === 'custom'" (change)="splitMode.set('custom')" />
+                    By amounts
+                </label>
+            </div>
+            @if (splitMode() === 'equal') {
+                @for (member of group.members; track member.id) {
+                    <label class="check">
+                        <input type="checkbox" [checked]="splitBetween().has(member.id)" (change)="toggle(member.id)" />
+                        {{ member.name }}
+                    </label>
+                }
+                @if (perPerson(); as share) {
+                    <p class="hint">
+                        @if (share.low === share.high) {
+                            {{ share.low | number:'1.0-0':'de-DE' }} ден each
+                        } @else {
+                            {{ share.low | number:'1.0-0':'de-DE' }}–{{ share.high | number:'1.0-0':'de-DE' }} ден each
+                        }
+                        between {{ share.count }} {{ share.count === 1 ? 'person' : 'people' }}
+                    </p>
+                }
+            } @else {
+                @for (member of group.members; track member.id) {
+                    <div class="share">
+                        <label [for]="'share-' + member.id">{{ member.name }}</label>
+                        <input [id]="'share-' + member.id" type="number" inputmode="numeric" min="0" step="1" placeholder="0"
+                            [value]="customShares().get(member.id) ?? ''"
+                            (input)="setShare(member.id, $any($event.target).value)" />
+                    </div>
+                }
+                @if (remaining(); as left) {
+                    <p class="hint">
+                        @if (left > 0) {
+                            {{ left | number:'1.0-0':'de-DE' }} ден still to assign
+                        } @else {
+                            {{ -left | number:'1.0-0':'de-DE' }} ден over the total
+                        }
+                    </p>
+                } @else if (remaining() === 0) {
+                    <p class="hint">Adds up to the total.</p>
+                }
+            }
+            @if (splitError()) {
+                <p class="field-error" id="split-error" role="alert">{{ splitError() }}</p>
+            }
+        </fieldset>
+        <div class="form-actions">
+            <button class="btn-primary" type="submit">{{ isEdit ? 'Save changes' : 'Add expense' }}</button>
+            <a [routerLink]="['/groups', group.id]">Cancel</a>
+        </div>
+    </form>
+
+    @if (isEdit) {
+        <div class="danger-zone">
+            @if (confirmingDelete()) {
+                <p role="alert">Delete this expense? Everyone's balances will change.</p>
+                <div class="form-actions">
+                    <button class="btn-danger" type="button" (click)="deleteExpense()">Yes, delete it</button>
+                    <button class="btn-link" type="button" (click)="confirmingDelete.set(false)">Keep it</button>
+                </div>
+            } @else {
+                <button class="btn-link danger" type="button" (click)="confirmingDelete.set(true)">Delete expense</button>
+            }
+        </div>
+    }
+}

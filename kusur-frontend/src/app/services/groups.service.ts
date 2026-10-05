@@ -121,6 +121,17 @@ export class GroupsService {
         this.change(groupId, (g) => ({ ...g, expenses: [...g.expenses, { ...expense, id: this.nextId++ }] }));
     }
 
+    updateExpense(groupId: number, expenseId: number, expense: Omit<Expense, 'id'>): void {
+        this.change(groupId, (g) => ({
+            ...g,
+            expenses: g.expenses.map((existing) => (existing.id === expenseId ? { ...expense, id: expenseId } : existing)),
+        }));
+    }
+
+    deleteExpense(groupId: number, expenseId: number): void {
+        this.change(groupId, (g) => ({ ...g, expenses: g.expenses.filter((expense) => expense.id !== expenseId) }));
+    }
+
     addSettlement(groupId: number, settlement: Omit<Settlement, 'id'>): void {
         this.change(groupId, (g) => ({ ...g, settlements: [...g.settlements, { ...settlement, id: this.nextId++ }] }));
     }

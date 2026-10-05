@@ -1,10 +1,10 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { GroupsService, ME_ID } from '../services/groups.service';
-import { netBalances, simplifyDebts, splitEqually } from '../shared/balances';
+import { expenseShares, netBalances, simplifyDebts } from '../shared/balances';
 import { initials } from '../shared/initials';
 
 /** One line of the group's history: an expense or a settlement. */
@@ -16,10 +16,12 @@ interface HistoryEntry {
     amount: number;
     /** what the signed-in user owes for an expense they are part of */
     myShare?: number;
+    /** where the row leads; expenses open their edit page */
+    link?: (string | number)[];
 }
 
 @Component({
-    imports: [DatePipe, DecimalPipe, ReactiveFormsModule, RouterLink],
+    imports: [DatePipe, DecimalPipe, NgTemplateOutlet, ReactiveFormsModule, RouterLink],
     selector: 'app-group-details-component',
     styleUrl: './group-details-component.css',
     templateUrl: './group-details-component.html',
@@ -65,7 +67,8 @@ export class GroupDetailsComponent {
             title: expense.description,
             detail: `${this.name(expense.paidById)} paid`,
             amount: expense.amount,
-            myShare: splitEqually(expense.amount, expense.splitBetweenIds).get(ME_ID),
+            myShare: expenseShares(expense).get(ME_ID),
+            link: ['/groups', group.id, 'expenses', expense.id, 'edit'],
         }));
         const settlements = group.settlements.map((settlement): HistoryEntry => ({
             key: `settlement-${settlement.id}`,

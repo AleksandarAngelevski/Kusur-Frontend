@@ -1,5 +1,5 @@
 import { Expense, Member, Settlement } from '../models/group.model';
-import { netBalances, simplifyDebts, splitEqually } from './balances';
+import { expenseShares, netBalances, simplifyDebts, splitEqually } from './balances';
 
 const members = (...ids: number[]): Member[] => ids.map((id) => ({ id, name: `M${id}` }));
 const expense = (amount: number, paidById: number, splitBetweenIds: number[]): Expense =>
@@ -93,5 +93,18 @@ describe('simplifyDebts', () => {
             net.set(debt.toId, net.get(debt.toId)! - debt.amount);
         }
         expect([...net.values()]).toEqual([0, 0, 0, 0, 0]);
+    });
+});
+
+describe('expenseShares', () => {
+    it('should split equally when there are no custom shares', () => {
+        expect([...expenseShares(expense(900, 1, [1, 2, 3]))]).toEqual([[1, 300], [2, 300], [3, 300]]);
+    });
+
+    it('should use the custom amounts when the expense has them', () => {
+        const custom = { ...expense(1000, 1, [1, 2]), customShares: [{ memberId: 1, amount: 250 }, { memberId: 2, amount: 750 }] };
+
+        expect([...expenseShares(custom)]).toEqual([[1, 250], [2, 750]]);
+        expect([...netBalances({ members: members(1, 2), expenses: [custom], settlements: [] })]).toEqual([[1, 750], [2, -750]]);
     });
 });

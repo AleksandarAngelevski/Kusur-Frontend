@@ -84,7 +84,7 @@
     <h2 class="section-title">History</h2>
     <div class="register">
         @for (entry of history(); track entry.key) {
-            <div class="row">
+            <ng-template #content>
                 <div class="mainContent">
                     <div class="title">{{ entry.title }}</div>
                     <div class="desc">{{ entry.detail }} · {{ entry.date | date:'d MMM' }}</div>
@@ -95,7 +95,12 @@
                         <span class="caption">your share {{ entry.myShare | number:'1.0-0':'de-DE' }} ден</span>
                     }
                 </div>
-            </div>
+            </ng-template>
+            @if (entry.link) {
+                <a class="row" [routerLink]="entry.link"><ng-container [ngTemplateOutlet]="content" /></a>
+            } @else {
+                <div class="row"><ng-container [ngTemplateOutlet]="content" /></div>
+            }
         } @empty {
             <p class="empty">No expenses yet. Add the first one.</p>
         }
