@@ -1,0 +1,52 @@
+# Runs the whole app in containers: PostgreSQL, the Spring Boot backend and the Angular
+# frontend behind nginx.
+#
+#   docker compose up --build        then open http://localhost:4300
+#
+# The backend is a separate repository and is expected next to this one, at ../Kusur.
+# The database here is its own empty one in a Docker volume, not your local PostgreSQL;
+# register an account to get started. `docker compose down -v` throws it away.
+#
+# Optional settings, from the shell or a .env file beside this one:
+#   DB_PASSWORD       password for the bundled database (default: kusur_local)
+#   ADMIN_USERNAMES   comma-separated usernames to make admins when the backend starts
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: kusur_db
+      POSTGRES_USER: kusur_db
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kusur_local}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kusur_db -d kusur_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ../Kusur
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/kusur_db
+      DB_USERNAME: kusur_db
+      DB_PASSWORD: ${DB_PASSWORD:-kusur_local}
+      DOMAIN_NAME: localhost:4300
+      # where password-reset links point
+      APP_FRONTEND_URL: http://localhost:4300
+      APP_ADMIN_USERNAMES: ${ADMIN_USERNAMES:-}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: ./kusur-frontend
+    ports:
+      # 4300 so it does not clash with `npm start` on 4200
+      - "4300:80"
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
