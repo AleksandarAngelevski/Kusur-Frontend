@@ -40,6 +40,17 @@ export class LoginComponent {
         });
     }
 
+    emailError(): string {
+        const email = this.loginForm.controls.email;
+        if (!email.touched || email.valid) return '';
+        return email.hasError('required') ? 'Enter your email.' : 'Enter a valid email address.';
+    }
+
+    passwordError(): string {
+        const password = this.loginForm.controls.password;
+        return password.touched && password.invalid ? 'Enter your password.' : '';
+    }
+
     private messageFor(err: HttpErrorResponse): string {
         if (err.status === 401 || err.status === 403) return 'Wrong email or password.';
         if (err.status === 0) return "Can't reach the server. Try again in a moment.";

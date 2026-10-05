@@ -101,6 +101,15 @@ form{
 .form-group:focus-within{
     border-bottom-color: var(--l-copper);
 }
+.form-group.invalid,
+.form-group.invalid:focus-within{
+    border-bottom-color: #A13A2C;
+}
+.field-error{
+    margin: -8px 0 14px;
+    font-size: 0.72rem;
+    color: #A13A2C;
+}
 .form-group label{
     font-size: 0.68rem;
     color: var(--l-ink-soft);
