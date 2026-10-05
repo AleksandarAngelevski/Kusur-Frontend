@@ -4,6 +4,7 @@ import { Activity } from '../models/activity.model';
 import { Group, GroupDetails } from '../models/group.model';
 import { apiErrorMessage } from '../shared/api-error';
 import { netBalances } from '../shared/balances';
+import { AdminApi } from './admin.api';
 import { AuthService } from './auth.service';
 import { CurrentUser, GroupsApi, NewExpense, NewSettlement } from './groups.api';
 
@@ -23,12 +24,19 @@ export class GroupsService {
     private api = inject(GroupsApi);
     private auth = inject(AuthService);
 
+    private adminApi = inject(AdminApi);
+
     private store = signal<GroupDetails[]>([]);
+    /** every group there is, fetched for admins by loadAllGroups(); empty for everyone else */
+    private adminStore = signal<GroupDetails[]>([]);
     private me = signal<CurrentUser | null>(null);
     private loaded = false;
 
     /** set when the groups could not be fetched; the shell shows it with a retry */
     loadError = signal('');
+
+    /** every group, including ones the signed-in admin is not in */
+    allGroups = this.adminStore.asReadonly();
 
     /** who is signed in, once loaded */
     currentUser = this.me.asReadonly();
@@ -105,9 +113,27 @@ export class GroupsService {
         );
     }
 
-    /** Reads the store, so it stays reactive when called inside a computed or a template. */
+    /**
+     * Fetches every group, for the admin pages. Refetched on each visit, since other people change them.
+     * Never fails: a problem lands in loadError instead.
+     */
+    loadAllGroups(): Observable<void> {
+        return this.adminApi.groups().pipe(
+            tap((groups) => this.adminStore.set(groups.map((group) => this.adopt(group)))),
+            map(() => undefined),
+            catchError((err) => {
+                this.loadError.set(apiErrorMessage(err, "Couldn't load the groups."));
+                return of(undefined);
+            })
+        );
+    }
+
+    /**
+     * One of my groups, or for an admin any group that loadAllGroups() fetched.
+     * Reads the stores, so it stays reactive when called inside a computed or a template.
+     */
     group(id: number): GroupDetails | undefined {
-        return this.store().find((group) => group.id === id);
+        return this.store().find((group) => group.id === id) ?? this.adminStore().find((group) => group.id === id);
     }
 
     /** The creator owns the group and is its first member. */
@@ -171,7 +197,11 @@ export class GroupsService {
     private replace(change: Observable<GroupDetails>): Observable<GroupDetails> {
         return change.pipe(
             map((group) => this.adopt(group)),
-            tap((updated) => this.store.update((groups) => groups.map((group) => (group.id === updated.id ? updated : group))))
+            tap((updated) => {
+                const swap = (groups: GroupDetails[]) => groups.map((group) => (group.id === updated.id ? updated : group));
+                this.store.update(swap);
+                this.adminStore.update(swap);
+            })
         );
     }
 
@@ -190,6 +220,7 @@ export class GroupsService {
 
     private reset(): void {
         this.store.set([]);
+        this.adminStore.set([]);
         this.me.set(null);
         this.loaded = false;
         this.loadError.set('');

@@ -1,13 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
-import { AdminApi, AdminGroup, AdminUser } from '../services/admin.api';
+import { GroupDetails } from '../models/group.model';
+import { AdminApi, AdminUser } from '../services/admin.api';
 import { GroupsService } from '../services/groups.service';
 import { apiErrorMessage } from '../shared/api-error';
 import { initials } from '../shared/initials';
 
 /** Admin-only page: every account with its role, and every group. */
 @Component({
-    imports: [],
+    imports: [RouterLink],
     selector: 'app-admin-component',
     styleUrl: './admin-component.css',
     templateUrl: './admin-component.html',
@@ -20,7 +22,7 @@ export class AdminComponent {
     protected meId = this.groupsService.meId;
 
     users = signal<AdminUser[]>([]);
-    private allGroups = signal<AdminGroup[]>([]);
+    private allGroups = signal<GroupDetails[]>([]);
     loading = signal(true);
     errorMessage = signal('');
 

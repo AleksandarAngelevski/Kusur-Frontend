@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-import { Role } from './groups.api';
+import { map, Observable } from 'rxjs';
+import { GroupDetails } from '../models/group.model';
+import { fromWire, GroupWire, Role } from './groups.api';
 
 /** An account as an admin sees it. */
 export interface AdminUser {
@@ -12,16 +13,6 @@ export interface AdminUser {
     enabled: boolean;
 }
 
-/** The parts of a group the admin page shows. The backend sends the whole group; the rest is ignored. */
-export interface AdminGroup {
-    id: number;
-    name: string;
-    ownerId: number;
-    members: { id: number; name: string }[];
-    formerMembers: { id: number; name: string }[];
-    expenses: unknown[];
-    settlements: unknown[];
-}
 
 /** The backend's admin-only endpoints. They answer 403 for anyone who is not an admin. */
 @Injectable({ providedIn: 'root' })
@@ -45,8 +36,8 @@ export class AdminApi {
     }
 
     /** every group, including ones the admin is not a member of */
-    groups(): Observable<AdminGroup[]> {
-        return this.http.get<AdminGroup[]>('/api/admin/groups');
+    groups(): Observable<GroupDetails[]> {
+        return this.http.get<GroupWire[]>('/api/admin/groups').pipe(map((groups) => groups.map(fromWire)));
     }
 
     deleteGroup(groupId: number): Observable<void> {

@@ -1,0 +1,56 @@
+/* Rows come from the global design system. */
+.back{
+    display: inline-block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+}
+.back:hover{
+    color: var(--ink);
+}
+
+.group-header{
+    margin-top: 14px;
+}
+.group-header h1{
+    font-size: 24px;
+}
+.group-header p{
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+
+/* .section-title (design system) sets the small size; keep it sans, not the serif heading font */
+.section-title{
+    font-family: var(--font-head);
+    margin-top: 32px;
+}
+
+a.row{
+    color: inherit;
+    text-decoration: none;
+}
+a.row:hover .title{
+    text-decoration: underline;
+}
+.mainContent{
+    flex: 1;
+    min-width: 0;
+}
+.right{
+    gap: 2px;
+}
+.money{
+    font-size: 13px;
+}
+.caption{
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+}
+.empty{
+    padding: 12px 2px;
+    font-size: 13px;
+    color: var(--ink-soft);
+}

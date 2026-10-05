@@ -75,6 +75,8 @@
                             <button class="btn-link" type="button" (click)="confirmingDelete.set(null)">Keep</button>
                         </span>
                     } @else {
+                        <a class="btn-link" [routerLink]="['/admin/groups', group.id]"
+                            [attr.aria-label]="'View and edit the expenses of ' + group.name">Expenses</a>
                         <button class="btn-link danger" type="button" (click)="confirmingDelete.set(group.id)"
                             [attr.aria-label]="'Delete group ' + group.name">Delete</button>
                     }

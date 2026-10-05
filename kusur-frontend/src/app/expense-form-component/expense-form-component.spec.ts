@@ -51,13 +51,13 @@ describe('ExpenseFormComponent', () => {
     };
 
     /** Renders the page as if opened with the given route params. */
-    const open = async (params: Record<string, string>) => {
+    const open = async (params: Record<string, string>, data: Record<string, unknown> = {}) => {
         await TestBed.configureTestingModule({
             imports: [ExpenseFormComponent],
             providers: [
                 provideRouter([]),
                 provideFakeGroupsApi(),
-                { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(params) } } },
+                { provide: ActivatedRoute, useValue: { snapshot: { paramMap: convertToParamMap(params), data } } },
             ],
         }).compileComponents();
 
@@ -252,6 +252,21 @@ describe('ExpenseFormComponent', () => {
             expect(labelled('label.mode', 'By amounts').querySelector('input')!.checked).toBe(true);
             expect(Array.from(el.querySelectorAll<HTMLInputElement>('.share input')).map((input) => input.value)).toEqual(['600', '1000', '', '']);
             expect(hint()).toBe('Adds up to the total.');
+        });
+    });
+
+    describe('editing from the admin view of a group', () => {
+        beforeEach(() => open({ id: '1', expenseId: '1' }, { admin: true }));
+
+        it('should lead back to the admin view, from the links and after saving', async () => {
+            expect(el.querySelector('.back')!.getAttribute('href')).toBe('/admin/groups/1');
+            expect(el.querySelector('.form-actions a')!.getAttribute('href')).toBe('/admin/groups/1');
+
+            await type('amount', '2000');
+            await submit();
+
+            expect(groups.group(1)!.expenses.find((expense) => expense.id === 1)!.amount).toBe(2000);
+            expect(navigate).toHaveBeenCalledWith(['/admin/groups', 1]);
         });
     });
 

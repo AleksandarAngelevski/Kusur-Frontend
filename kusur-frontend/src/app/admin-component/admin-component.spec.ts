@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
-import { AdminApi, AdminGroup, AdminUser } from '../services/admin.api';
+import { provideRouter } from '@angular/router';
+import { GroupDetails } from '../models/group.model';
+import { AdminApi, AdminUser } from '../services/admin.api';
 import { GroupsApi } from '../services/groups.api';
 import { loadFakeGroups, ME_ID, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { AdminComponent } from './admin-component';
@@ -12,10 +14,11 @@ const users = (): AdminUser[] => [
     { id: 3, username: 'marija', email: 'marija@example.com', role: 'ADMIN', enabled: true },
 ];
 
-const groups = (): AdminGroup[] => [
+// only the fields the page reads matter here
+const groups = () => [
     { id: 1, name: 'Ohrid Trip', ownerId: ME_ID, members: [{ id: ME_ID, name: 'ace' }, { id: 2, name: 'petar' }], formerMembers: [], expenses: [{}, {}], settlements: [] },
     { id: 9, name: 'Ski weekend', ownerId: 3, members: [{ id: 2, name: 'petar' }], formerMembers: [{ id: 3, name: 'marija' }], expenses: [{}], settlements: [] },
-];
+] as unknown as GroupDetails[];
 
 describe('AdminComponent', () => {
     let fixture: ComponentFixture<AdminComponent>;
@@ -43,7 +46,7 @@ describe('AdminComponent', () => {
     const open = async () => {
         await TestBed.configureTestingModule({
             imports: [AdminComponent],
-            providers: [provideFakeGroupsApi(), { provide: AdminApi, useValue: api }],
+            providers: [provideRouter([]), provideFakeGroupsApi(), { provide: AdminApi, useValue: api }],
         }).compileComponents();
 
         loadFakeGroups('ADMIN');
@@ -76,9 +79,15 @@ describe('AdminComponent', () => {
         await open();
 
         expect(rows('Groups')).toEqual([
-            'OT Ohrid Trip Owned by ace · 2 members · 2 expenses Delete',
-            'SW Ski weekend Owned by marija · 1 member · 1 expense Delete',
+            'OT Ohrid Trip Owned by ace · 2 members · 2 expenses Expenses Delete',
+            'SW Ski weekend Owned by marija · 1 member · 1 expense Expenses Delete',
         ]);
+    });
+
+    it('should link each group to its admin view', async () => {
+        await open();
+
+        expect(Array.from(el.querySelectorAll('a.btn-link')).map((a) => a.getAttribute('href'))).toEqual(['/admin/groups/1', '/admin/groups/9']);
     });
 
     it('should make a user an admin and take it away again', async () => {
@@ -112,7 +121,7 @@ describe('AdminComponent', () => {
             'AC ace you Admin ace@example.com',
             'PE petar petar@example.com Make admin Delete account',
         ]);
-        expect(rows('Groups')).toEqual(['SW Ski weekend Owned by petar · 1 member · 1 expense Delete']);
+        expect(rows('Groups')).toEqual(['SW Ski weekend Owned by petar · 1 member · 1 expense Expenses Delete']);
         expect(reload).toHaveBeenCalledTimes(1);
     });
 
@@ -139,7 +148,7 @@ describe('AdminComponent', () => {
         await click('Yes, delete');
 
         expect(api.deleteGroup).toHaveBeenCalledWith(9);
-        expect(rows('Groups')).toEqual(['OT Ohrid Trip Owned by ace · 2 members · 2 expenses Delete']);
+        expect(rows('Groups')).toEqual(['OT Ohrid Trip Owned by ace · 2 members · 2 expenses Expenses Delete']);
         expect(reload).toHaveBeenCalledTimes(1);
     });
 

@@ -14,7 +14,7 @@ export interface CurrentUser {
 }
 
 /** A group as the backend sends it: the same as GroupDetails, but with dates as strings and null for "no custom shares". */
-interface GroupWire extends Omit<GroupDetails, 'expenses' | 'settlements'> {
+export interface GroupWire extends Omit<GroupDetails, 'expenses' | 'settlements'> {
     expenses: (Omit<Expense, 'date' | 'customShares'> & { date: string; customShares: Expense['customShares'] | null })[];
     settlements: (Omit<Settlement, 'date'> & { date: string })[];
 }
@@ -26,7 +26,7 @@ export type NewSettlement = Pick<Settlement, 'fromId' | 'toId' | 'amount'>;
 const toWireDate = (date: Date) =>
     new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
 
-const fromWire = (group: GroupWire): GroupDetails => ({
+export const fromWire = (group: GroupWire): GroupDetails => ({
     ...group,
     expenses: group.expenses.map((expense) => ({
         ...expense,

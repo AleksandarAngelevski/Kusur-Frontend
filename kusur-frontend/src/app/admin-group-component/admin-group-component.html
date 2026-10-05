@@ -1,0 +1,37 @@
+<a class="back" routerLink="/admin">‹ Admin</a>
+
+@if (group(); as group) {
+    <header class="group-header">
+        <h1>{{ group.name }}</h1>
+        <p>
+            Owned by {{ owner() }} ·
+            {{ group.members.length }} {{ group.members.length === 1 ? 'member' : 'members' }}:
+            @for (member of group.members; track member.id) {
+                {{ member.name }}{{ $last ? '' : ',' }}
+            }
+        </p>
+    </header>
+
+    <h2 class="section-title">Expenses · {{ expenses().length }}</h2>
+    <div class="register">
+        @for (expense of expenses(); track expense.id) {
+            <a class="row" [routerLink]="['/admin/groups', group.id, 'expenses', expense.id, 'edit']">
+                <div class="mainContent">
+                    <div class="title">{{ expense.description }}</div>
+                    <div class="desc">{{ expense.paidBy }} paid · {{ expense.date | date:'d MMM' }}</div>
+                </div>
+                <div class="right">
+                    <span class="money">{{ expense.amount | number:'1.0-0':'de-DE' }} ден</span>
+                    <span class="caption">Edit</span>
+                </div>
+            </a>
+        } @empty {
+            <p class="empty">This group has no expenses.</p>
+        }
+    </div>
+} @else {
+    <header class="group-header">
+        <h1>Group not found</h1>
+        <p>It may have been deleted, or the link is wrong.</p>
+    </header>
+}

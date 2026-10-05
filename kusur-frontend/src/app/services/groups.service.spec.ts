@@ -1,8 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { GroupDetails } from '../models/group.model';
 import { loadFakeGroups, ME_ID, provideFakeGroupsApi } from '../testing/fake-groups-api';
+import { AdminApi } from './admin.api';
 import { AuthService } from './auth.service';
 import { GroupsApi } from './groups.api';
 import { GroupsService } from './groups.service';
@@ -106,6 +107,23 @@ describe('GroupsService', () => {
         service.addSettlement(1, { fromId: 3, toId: ME_ID, amount: 800 }).subscribe();
 
         expect(service.activity()[0]).toMatchObject({ activity: 'Marija settled up', groupName: 'Ohrid Trip', amount: 800 });
+    });
+
+    it('should find a group from the admin copy, and keep that copy up to date', () => {
+        const outsider: GroupDetails = { id: 50, name: 'Not mine', ownerId: 9, members: [{ id: 9, name: 'stefan' }], formerMembers: [], expenses: [], settlements: [] };
+        vi.spyOn(TestBed.inject(AdminApi), 'groups').mockReturnValue(of([outsider, service.group(1)!]));
+        expect(service.group(50)).toBeUndefined();
+
+        service.loadAllGroups().subscribe();
+        expect(service.group(50)!.name).toBe('Not mine');
+        expect(service.groups().some((group) => group.id === 50)).toBe(false);
+
+        service.renameGroup(1, 'Ohrid 2026').subscribe();
+        expect(service.allGroups().find((group) => group.id === 1)!.name).toBe('Ohrid 2026');
+
+        TestBed.inject(AuthService).logout();
+        TestBed.tick();
+        expect(service.allGroups()).toEqual([]);
     });
 
     it('should only fetch once, until someone signs out', () => {

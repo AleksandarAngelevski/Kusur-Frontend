@@ -3,7 +3,7 @@
     <h1>{{ group() ? 'Expense not found' : 'Group not found' }}</h1>
     <p class="lead">It may have been deleted, or the link is wrong.</p>
 } @else if (group(); as group) {
-    <a class="back" [routerLink]="['/groups', group.id]">‹ {{ group.name }}</a>
+    <a class="back" [routerLink]="backLink">‹ {{ group.name }}</a>
 
     <h1>{{ isEdit ? 'Edit expense' : 'Add expense' }}</h1>
     <p class="lead">Split it equally, or give each person their own amount.</p>
@@ -103,7 +103,7 @@
         }
         <div class="form-actions">
             <button class="btn-primary" type="submit" [disabled]="saving()">{{ isEdit ? 'Save changes' : 'Add expense' }}</button>
-            <a [routerLink]="['/groups', group.id]">Cancel</a>
+            <a [routerLink]="backLink">Cancel</a>
         </div>
     </form>
 

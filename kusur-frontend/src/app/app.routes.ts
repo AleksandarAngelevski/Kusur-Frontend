@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { ExpenseFormComponent } from './expense-form-component/expense-form-component';
 import { AdminComponent } from './admin-component/admin-component';
+import { AdminGroupComponent } from './admin-group-component/admin-group-component';
 import { CreateGroupComponent } from './create-group-component/create-group-component';
 import { GroupDetailsComponent } from './group-details-component/group-details-component';
 import { GroupSettingsComponent } from './group-settings-component/group-settings-component';
@@ -14,6 +15,7 @@ import { RegisterComponent } from './register-component/register-component';
 import { ResetPasswordComponent } from './reset-password-component/reset-password-component';
 import { SettleUpComponent } from './settle-up-component/settle-up-component';
 import { ShellComponent } from './shell-component/shell-component';
+import { adminGroupsResolver } from './shared/admin-groups.resolver';
 import { adminGuard, authGuard, guestGuard } from './shared/auth.guard';
 import { groupsResolver } from './shared/groups.resolver';
 
@@ -72,6 +74,20 @@ export const routes: Routes = [
                 path: 'admin',
                 component: AdminComponent,
                 canActivate: [adminGuard]
+            },
+            {
+                path: 'admin/groups/:id',
+                component: AdminGroupComponent,
+                canActivate: [adminGuard],
+                resolve: { allGroups: adminGroupsResolver }
+            },
+            {
+                // the same form members use; `admin` sends it back to the admin view afterwards
+                path: 'admin/groups/:id/expenses/:expenseId/edit',
+                component: ExpenseFormComponent,
+                canActivate: [adminGuard],
+                resolve: { allGroups: adminGroupsResolver },
+                data: { admin: true }
             }
         ]
     },

@@ -28,8 +28,12 @@ const money = new Intl.NumberFormat('de-DE');
 export class ExpenseFormComponent {
     private groups = inject(GroupsService);
     private router = inject(Router);
-    private params = inject(ActivatedRoute).snapshot.paramMap;
+    private route = inject(ActivatedRoute).snapshot;
+    private params = this.route.paramMap;
     private groupId = Number(this.params.get('id'));
+
+    /** where Back, Cancel and a finished save lead: the group, or its admin view when an admin came from there */
+    backLink = this.route.data?.['admin'] ? ['/admin/groups', this.groupId] : ['/groups', this.groupId];
 
     group = computed(() => this.groups.group(this.groupId));
 
@@ -142,7 +146,7 @@ export class ExpenseFormComponent {
         this.saving.set(true);
         this.errorMessage.set('');
         change.subscribe({
-            next: () => this.router.navigate(['/groups', this.groupId]),
+            next: () => this.router.navigate(this.backLink),
             error: (err) => {
                 this.saving.set(false);
                 this.errorMessage.set(apiErrorMessage(err));
