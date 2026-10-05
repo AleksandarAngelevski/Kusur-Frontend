@@ -174,3 +174,16 @@ button:disabled{
     font-weight: 600;
     text-decoration: none;
 }
+
+/* confirmation text shown in place of a form */
+.notice{
+    margin-top: 16px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--l-ink-soft);
+    overflow-wrap: anywhere;
+}
+.notice strong{
+    color: var(--l-ink);
+    font-weight: 600;
+}

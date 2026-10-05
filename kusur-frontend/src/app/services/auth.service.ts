@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
+import { ForgotPasswordRequest, LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
 
 const TOKEN_KEY = 'token';
 
@@ -23,6 +23,12 @@ export class AuthService {
         return this.http.post<LoginResponse>('/api/auth/register', request).pipe(
             tap((response) => this.saveToken(response.token))
         );
+    }
+
+    /** Asks the backend to email a reset link. It answers the same way whether or not the address has an account. */
+    requestPasswordReset(email: string): Observable<void> {
+        const request: ForgotPasswordRequest = { email };
+        return this.http.post<void>('/api/auth/forgot-password', request);
     }
 
     logout(): void {

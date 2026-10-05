@@ -8,8 +8,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
-    // login and register have no token yet, and a 401 there just means the request was rejected
-    if (req.url.endsWith('/auth/login') || req.url.endsWith('/auth/register')) {
+    // the auth endpoints are called signed out, and a 401 there just means the request was rejected
+    if (req.url.startsWith('/api/auth/')) {
         return next(req);
     }
 
