@@ -3,7 +3,21 @@
     <div class="row">
         <div class="mainContent">
             <div class="desc">Signed in as</div>
-            <div class="title">{{ auth.username() ?? 'Unknown' }}</div>
+            <div class="title">{{ username() }}</div>
         </div>
     </div>
+    @if (user(); as user) {
+        <div class="row">
+            <div class="mainContent">
+                <div class="desc">Email</div>
+                <div class="title">{{ user.email }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="mainContent">
+                <div class="desc">Role</div>
+                <div class="title">{{ user.role === 'ADMIN' ? 'Admin' : 'Member' }}</div>
+            </div>
+        </div>
+    }
 </div>

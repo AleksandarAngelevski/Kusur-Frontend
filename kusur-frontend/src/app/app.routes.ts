@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ExpenseFormComponent } from './expense-form-component/expense-form-component';
+import { AdminComponent } from './admin-component/admin-component';
 import { CreateGroupComponent } from './create-group-component/create-group-component';
 import { GroupDetailsComponent } from './group-details-component/group-details-component';
 import { GroupSettingsComponent } from './group-settings-component/group-settings-component';
@@ -13,7 +14,7 @@ import { RegisterComponent } from './register-component/register-component';
 import { ResetPasswordComponent } from './reset-password-component/reset-password-component';
 import { SettleUpComponent } from './settle-up-component/settle-up-component';
 import { ShellComponent } from './shell-component/shell-component';
-import { authGuard, guestGuard } from './shared/auth.guard';
+import { adminGuard, authGuard, guestGuard } from './shared/auth.guard';
 import { groupsResolver } from './shared/groups.resolver';
 
 
@@ -66,6 +67,11 @@ export const routes: Routes = [
             {
                 path: 'profile',
                 component: ProfileComponent
+            },
+            {
+                path: 'admin',
+                component: AdminComponent,
+                canActivate: [adminGuard]
             }
         ]
     },

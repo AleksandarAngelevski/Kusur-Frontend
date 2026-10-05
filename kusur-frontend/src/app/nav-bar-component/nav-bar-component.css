@@ -43,7 +43,7 @@ button:focus-visible{
     color: var(--till-ink);
 }
 
-/* five items don't fit a phone at the desktop spacing */
+/* five or six items don't fit a phone at the desktop spacing */
 @media (max-width: 480px){
     ul{
         justify-content: space-around;

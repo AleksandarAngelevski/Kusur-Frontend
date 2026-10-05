@@ -4,6 +4,9 @@
         <li><a routerLink="/groups" routerLinkActive="active" ariaCurrentWhenActive="page">Groups</a></li>
         <li><a routerLink="/activity" routerLinkActive="active" ariaCurrentWhenActive="page">Activity</a></li>
         <li><a routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">Profile</a></li>
+        @if (groups.isAdmin()) {
+            <li><a routerLink="/admin" routerLinkActive="active" ariaCurrentWhenActive="page">Admin</a></li>
+        }
         <li><button type="button" (click)="logout()">Log out</button></li>
     </ul>
 </nav>

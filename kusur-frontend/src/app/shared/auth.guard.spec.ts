@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, CanActivateFn, provideRouter, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { authGuard, guestGuard } from './auth.guard';
+import { firstValueFrom, Observable } from 'rxjs';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
+import { adminGuard, authGuard, guestGuard } from './auth.guard';
 
 describe('route guards', () => {
     let auth: AuthService;
@@ -18,7 +20,7 @@ describe('route guards', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [provideRouter([])],
+            providers: [provideRouter([]), provideFakeGroupsApi()],
         });
         auth = TestBed.inject(AuthService);
     });
@@ -48,6 +50,22 @@ describe('route guards', () => {
             auth.token.set('some.jwt.token');
 
             expect(urlOf(run(guestGuard))).toBe('/');
+        });
+    });
+
+    describe('adminGuard', () => {
+        const result = () => firstValueFrom(run(adminGuard) as Observable<unknown>);
+
+        it('should let an admin through', async () => {
+            loadFakeGroups('ADMIN');
+
+            expect(await result()).toBe(true);
+        });
+
+        it('should send everyone else home', async () => {
+            loadFakeGroups('USER');
+
+            expect(urlOf(await result())).toBe('/');
         });
     });
 });

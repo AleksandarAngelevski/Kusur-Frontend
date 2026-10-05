@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { loadFakeGroups, provideFakeGroupsApi } from '../testing/fake-groups-api';
 import { NavBarComponent } from './nav-bar-component';
 
 describe('NavBarComponent', () => {
@@ -10,7 +11,7 @@ describe('NavBarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NavBarComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideFakeGroupsApi()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavBarComponent);
@@ -33,6 +34,15 @@ describe('NavBarComponent', () => {
       ['Activity', '/activity'],
       ['Profile', '/profile'],
     ]);
+  });
+
+  it('should add an Admin link for admins only', async () => {
+    const adminLink = () => (fixture.nativeElement as HTMLElement).querySelector('a[href="/admin"]');
+    expect(adminLink()).toBeNull();
+
+    loadFakeGroups('ADMIN');
+    await fixture.whenStable();
+    expect(adminLink()?.textContent).toContain('Admin');
   });
 
   it('should clear the token and go to the login page when Log out is clicked', () => {

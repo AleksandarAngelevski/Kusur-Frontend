@@ -3,11 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { Expense, GroupDetails, Member, Settlement } from '../models/group.model';
 
+export type Role = 'USER' | 'ADMIN';
+
 /** The signed-in user, as GET /api/users/me returns it. */
 export interface CurrentUser {
     id: number;
     username: string;
     email: string;
+    role: Role;
 }
 
 /** A group as the backend sends it: the same as GroupDetails, but with dates as strings and null for "no custom shares". */

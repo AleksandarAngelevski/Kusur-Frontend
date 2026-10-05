@@ -1,0 +1,77 @@
+<header class="admin-header">
+    <h1>Admin</h1>
+    <p>Every account and every group, including ones you are not in.</p>
+</header>
+
+@if (errorMessage()) {
+    <div class="problem" role="alert">
+        <span>{{ errorMessage() }}</span>
+        <button class="btn-link" type="button" (click)="load()">Reload</button>
+    </div>
+}
+
+@if (loading()) {
+    <p class="empty">Loading…</p>
+} @else {
+    <h2 class="section-title">Users · {{ users().length }}</h2>
+    <div class="register">
+        @for (user of users(); track user.id) {
+            <div class="row">
+                <div class="av"><span class="initials">{{ initials(user.username) }}</span></div>
+                <div class="mainContent">
+                    <div class="title">
+                        {{ user.username }}
+                        @if (user.id === meId()) {
+                            <span class="you">you</span>
+                        }
+                        @if (user.role === 'ADMIN') {
+                            <span class="badge">Admin</span>
+                        }
+                    </div>
+                    <div class="desc">{{ user.email }}</div>
+                </div>
+                <!-- the backend refuses to let an admin demote themselves, so the button is left out for you -->
+                @if (user.id !== meId()) {
+                    <div class="right">
+                        <button class="btn-link" type="button" (click)="toggleRole(user)">
+                            {{ user.role === 'ADMIN' ? 'Remove admin' : 'Make admin' }}
+                        </button>
+                    </div>
+                }
+            </div>
+        } @empty {
+            <p class="empty">No users.</p>
+        }
+    </div>
+
+    <h2 class="section-title">Groups · {{ groups().length }}</h2>
+    <div class="register">
+        @for (group of groups(); track group.id) {
+            <div class="row">
+                <div class="av"><span class="initials">{{ initials(group.name) }}</span></div>
+                <div class="mainContent">
+                    <div class="title">{{ group.name }}</div>
+                    <div class="desc">
+                        Owned by {{ group.owner }} ·
+                        {{ group.memberCount }} {{ group.memberCount === 1 ? 'member' : 'members' }} ·
+                        {{ group.expenseCount }} {{ group.expenseCount === 1 ? 'expense' : 'expenses' }}
+                    </div>
+                </div>
+                <div class="right">
+                    @if (confirmingDelete() === group.id) {
+                        <span class="confirm" role="alert">Delete for everyone?</span>
+                        <span class="choices">
+                            <button class="btn-link danger" type="button" (click)="deleteGroup(group.id)">Yes, delete</button>
+                            <button class="btn-link" type="button" (click)="confirmingDelete.set(null)">Keep</button>
+                        </span>
+                    } @else {
+                        <button class="btn-link danger" type="button" (click)="confirmingDelete.set(group.id)"
+                            [attr.aria-label]="'Delete group ' + group.name">Delete</button>
+                    }
+                </div>
+            </div>
+        } @empty {
+            <p class="empty">No groups yet.</p>
+        }
+    </div>
+}

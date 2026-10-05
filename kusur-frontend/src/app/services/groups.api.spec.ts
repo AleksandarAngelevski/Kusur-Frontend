@@ -80,7 +80,7 @@ describe('GroupsApi', () => {
             run();
             const req = http.expectOne({ method, url });
             expect(req.request.body).toEqual(body);
-            req.flush(method === 'GET' ? { id: 2, username: 'ace', email: 'ace@example.com' } : wireGroup);
+            req.flush(method === 'GET' ? { id: 2, username: 'ace', email: 'ace@example.com', role: 'USER' } : wireGroup);
         }
     });
 });

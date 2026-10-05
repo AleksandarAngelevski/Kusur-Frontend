@@ -30,8 +30,14 @@ export class GroupsService {
     /** set when the groups could not be fetched; the shell shows it with a retry */
     loadError = signal('');
 
+    /** who is signed in, once loaded */
+    currentUser = this.me.asReadonly();
+
     /** the signed-in user's member id; matches nobody until the groups have loaded */
     meId = computed(() => this.me()?.id ?? -1);
+
+    /** admins get the Admin page and its nav link; the backend enforces the role on every admin call */
+    isAdmin = computed(() => this.me()?.role === 'ADMIN');
 
     /** Card summaries for lists, with the signed-in user's balance in each group. */
     groups = computed<Group[]>(() =>

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { GroupsService } from '../services/groups.service';
 
 @Component({
   imports: [RouterLink, RouterLinkActive],
@@ -11,6 +12,7 @@ import { AuthService } from '../services/auth.service';
 export class NavBarComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+  protected groups = inject(GroupsService);
 
   logout(): void {
     this.auth.logout();

@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { AuthService } from '../services/auth.service';
+import { GroupsService } from '../services/groups.service';
 
 @Component({
   imports: [],
@@ -8,5 +9,9 @@ import { AuthService } from '../services/auth.service';
   templateUrl: './profile-component.html',
 })
 export class ProfileComponent {
-  protected auth = inject(AuthService);
+  private auth = inject(AuthService);
+  protected user = inject(GroupsService).currentUser;
+
+  /** the backend's answer when it has loaded, otherwise what the token says */
+  username = computed(() => this.user()?.username ?? this.auth.username() ?? 'Unknown');
 }

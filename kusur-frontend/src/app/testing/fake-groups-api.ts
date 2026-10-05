@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { Observable, of, throwError } from 'rxjs';
 import { GroupDetails, Member } from '../models/group.model';
 import { AuthService } from '../services/auth.service';
-import { CurrentUser, GroupsApi, NewExpense, NewSettlement } from '../services/groups.api';
+import { CurrentUser, GroupsApi, NewExpense, NewSettlement, Role } from '../services/groups.api';
 import { GroupsService } from '../services/groups.service';
 import { netBalances } from '../shared/balances';
 
@@ -58,8 +58,11 @@ export class FakeGroupsApi implements Pick<GroupsApi, keyof GroupsApi> {
     private groups = seed();
     private nextId = 100;
 
+    /** set to 'ADMIN' before loading to sign in as an admin */
+    role: Role = 'USER';
+
     me(): Observable<CurrentUser> {
-        return of({ id: ME_ID, username: 'ace', email: 'ace@example.com' });
+        return of({ id: ME_ID, username: 'ace', email: 'ace@example.com', role: this.role });
     }
 
     list(): Observable<GroupDetails[]> {
@@ -157,10 +160,11 @@ export class FakeGroupsApi implements Pick<GroupsApi, keyof GroupsApi> {
 export const provideFakeGroupsApi = (): Provider => ({ provide: GroupsApi, useClass: FakeGroupsApi });
 
 /**
- * Signs in and fetches the fake groups into GroupsService, as the route resolver does in the app.
- * Call after configuring the TestBed.
+ * Signs in (as a normal user unless told otherwise) and fetches the fake groups into GroupsService,
+ * as the route resolver does in the app. Call after configuring the TestBed.
  */
-export function loadFakeGroups(): GroupsService {
+export function loadFakeGroups(role: Role = 'USER'): GroupsService {
+    (TestBed.inject(GroupsApi) as unknown as FakeGroupsApi).role = role;
     TestBed.inject(AuthService).token.set('test.token');
     const service = TestBed.inject(GroupsService);
     service.load().subscribe();
