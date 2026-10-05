@@ -1,0 +1,20 @@
+<a class="back" routerLink="/groups">‹ Groups</a>
+
+<h1>New group</h1>
+<p class="lead">You can add members once it exists.</p>
+
+<form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
+    <div class="field">
+        <label for="name">Group name</label>
+        <input id="name" type="text" formControlName="name" autocomplete="off"
+            [attr.aria-invalid]="nameError() ? 'true' : null"
+            [attr.aria-describedby]="nameError() ? 'name-error' : null" />
+        @if (nameError()) {
+            <p class="field-error" id="name-error">{{ nameError() }}</p>
+        }
+    </div>
+    <div class="form-actions">
+        <button class="btn-primary" type="submit">Create group</button>
+        <a routerLink="/groups">Cancel</a>
+    </div>
+</form>

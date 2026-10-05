@@ -1,9 +1,11 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Group } from '../models/group.model';
+import { initials } from '../shared/initials';
 
 @Component({
-  imports: [DecimalPipe],
+  imports: [DecimalPipe, RouterLink],
   selector: 'app-group-card',
   styleUrl: './group-card.css',
   templateUrl: './group-card.html',
@@ -11,10 +13,5 @@ import { Group } from '../models/group.model';
 export class GroupCard {
   group = input.required<Group>();
 
-  initials = computed(() => {
-    const words = this.group().name.trim().split(/\s+/).filter(Boolean);
-    if (words.length === 0) return '?';
-    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-    return (words[0][0] + words[1][0]).toUpperCase();
-  });
+  initials = computed(() => initials(this.group().name));
 }

@@ -1,4 +1,7 @@
 import { Routes } from '@angular/router';
+import { AddExpenseComponent } from './add-expense-component/add-expense-component';
+import { CreateGroupComponent } from './create-group-component/create-group-component';
+import { GroupDetailsComponent } from './group-details-component/group-details-component';
 import { HomeComponent } from './home-component/home-component';
 import { LoginComponent } from './login-component/login-component';
 import { ForgotPasswordComponent } from './forgot-password-component/forgot-password-component';
@@ -7,6 +10,7 @@ import { ProfileComponent } from './profile-component/profile-component';
 import { RecentActivityComponent } from './recent-activity-component/recent-activity-component';
 import { RegisterComponent } from './register-component/register-component';
 import { ResetPasswordComponent } from './reset-password-component/reset-password-component';
+import { SettleUpComponent } from './settle-up-component/settle-up-component';
 import { ShellComponent } from './shell-component/shell-component';
 import { authGuard, guestGuard } from './shared/auth.guard';
 
@@ -26,6 +30,23 @@ export const routes: Routes = [
             {
                 path: 'groups',
                 component: GroupsComponent
+            },
+            {
+                // listed before groups/:id so "new" isn't read as an id
+                path: 'groups/new',
+                component: CreateGroupComponent
+            },
+            {
+                path: 'groups/:id',
+                component: GroupDetailsComponent
+            },
+            {
+                path: 'groups/:id/expenses/new',
+                component: AddExpenseComponent
+            },
+            {
+                path: 'groups/:id/settle',
+                component: SettleUpComponent
             },
             {
                 path: 'activity',

@@ -5,3 +5,17 @@
     font-family: var(--font-head);
     margin-top: 36px;
 }
+.heading{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.new-group{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--copper);
+    text-decoration: none;
+}
+.new-group:hover{
+    text-decoration: underline;
+}

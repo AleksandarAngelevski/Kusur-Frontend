@@ -1,17 +1,14 @@
-import { Component, signal } from '@angular/core';
-import { Group } from '../models/group.model';
+import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { GroupCard } from '../group-card/group-card';
+import { GroupsService } from '../services/groups.service';
 
 @Component({
-  imports: [GroupCard],
+  imports: [GroupCard, RouterLink],
   selector: 'app-groups-component',
   styleUrl: './groups-component.css',
   templateUrl: './groups-component.html',
 })
 export class GroupsComponent {
-  groups = signal<Group[]>([
-    { id: 1, name: 'Ohrid Trip', memberCount: 4, balance: 1200 },
-    { id: 2, name: 'Apartment', memberCount: 3, balance: -3500 },
-  ]);
+  groups = inject(GroupsService).groups;
 }
-

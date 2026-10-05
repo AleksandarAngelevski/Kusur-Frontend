@@ -1,0 +1,93 @@
+/* Shared by the signed-in form pages (new group, add expense, settle up). */
+.back{
+    display: inline-block;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+}
+.back:hover{
+    color: var(--ink);
+}
+h1{
+    margin-top: 14px;
+    font-size: 24px;
+}
+.lead{
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--ink-soft);
+}
+
+form{
+    max-width: 420px;
+    margin-top: 22px;
+}
+.field{
+    margin-bottom: 16px;
+}
+.field label,
+legend{
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+}
+.field input,
+.field select{
+    width: 100%;
+    padding: 9px 10px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--paper-edge);
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-size: 14px;
+}
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"]{
+    border-color: var(--debit);
+}
+
+fieldset{
+    margin-bottom: 16px;
+    border: none;
+}
+.check{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+}
+.check input{
+    width: 16px;
+    height: 16px;
+    accent-color: var(--copper);
+}
+.hint{
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink-soft);
+}
+
+.field-error,
+.error{
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--debit);
+}
+
+.form-actions{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 22px;
+}
+.form-actions a{
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: none;
+}
+.form-actions a:hover{
+    color: var(--ink);
+}

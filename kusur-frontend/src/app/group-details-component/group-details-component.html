@@ -1,0 +1,108 @@
+<a class="back" routerLink="/groups">‹ Groups</a>
+
+@if (group(); as group) {
+    <header class="group-header">
+        <h1>{{ group.name }}</h1>
+        <p>{{ group.members.length }} {{ group.members.length === 1 ? 'member' : 'members' }}</p>
+    </header>
+
+    <div class="netcard">
+        <div class="label">Your balance in this group</div>
+        <div class="big"
+             [class.credit]="myBalance() > 0"
+             [class.debit]="myBalance() < 0">
+            {{ myBalance() > 0 ? '+' : '' }}{{ myBalance() | number:'1.0-0':'de-DE' }} ден
+        </div>
+        <div class="summary">
+            @if (myBalance() > 0) {
+                You are owed money.
+            } @else if (myBalance() < 0) {
+                You owe money.
+            } @else {
+                You are settled up.
+            }
+        </div>
+    </div>
+
+    <div class="actions">
+        <a class="btn-primary" [routerLink]="['/groups', group.id, 'expenses', 'new']">Add expense</a>
+        <a class="btn-secondary" [routerLink]="['/groups', group.id, 'settle']">Settle up</a>
+    </div>
+
+    <h2 class="section-title">Who pays whom</h2>
+    <div class="register">
+        @for (payment of payments(); track $index) {
+            <div class="row">
+                <div class="mainContent">
+                    <div class="title">{{ payment.text }}</div>
+                </div>
+                <div class="right">
+                    <span class="money">{{ payment.amount | number:'1.0-0':'de-DE' }} ден</span>
+                </div>
+            </div>
+        } @empty {
+            <p class="empty">Everyone is settled up.</p>
+        }
+    </div>
+
+    <h2 class="section-title">Members</h2>
+    <div class="register">
+        @for (entry of memberBalances(); track entry.member.id) {
+            <div class="row">
+                <div class="av"><span class="initials">{{ initials(entry.member.name) }}</span></div>
+                <div class="mainContent">
+                    <div class="title">{{ entry.member.name }}</div>
+                </div>
+                <div class="right">
+                    @if (entry.balance === 0) {
+                        <span class="settled">Settled up</span>
+                    } @else {
+                        <span class="money"
+                              [class.credit]="entry.balance > 0"
+                              [class.debit]="entry.balance < 0">
+                            {{ entry.balance > 0 ? '+' : '' }}{{ entry.balance | number:'1.0-0':'de-DE' }} ден
+                        </span>
+                        <span class="caption">{{ entry.balance > 0 ? 'gets back' : 'owes' }}</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <form class="add-member" [formGroup]="memberForm" (ngSubmit)="addMember()">
+        <label for="new-member">Add a member</label>
+        <div class="add-member-row">
+            <input id="new-member" type="text" formControlName="name" placeholder="Name" autocomplete="off"
+                [attr.aria-invalid]="memberError() ? 'true' : null"
+                [attr.aria-describedby]="memberError() ? 'new-member-error' : null" />
+            <button class="btn-secondary" type="submit">Add</button>
+        </div>
+        @if (memberError()) {
+            <p class="field-error" id="new-member-error" role="alert">{{ memberError() }}</p>
+        }
+    </form>
+
+    <h2 class="section-title">History</h2>
+    <div class="register">
+        @for (entry of history(); track entry.key) {
+            <div class="row">
+                <div class="mainContent">
+                    <div class="title">{{ entry.title }}</div>
+                    <div class="desc">{{ entry.detail }} · {{ entry.date | date:'d MMM' }}</div>
+                </div>
+                <div class="right">
+                    <span class="money">{{ entry.amount | number:'1.0-0':'de-DE' }} ден</span>
+                    @if (entry.myShare) {
+                        <span class="caption">your share {{ entry.myShare | number:'1.0-0':'de-DE' }} ден</span>
+                    }
+                </div>
+            </div>
+        } @empty {
+            <p class="empty">No expenses yet. Add the first one.</p>
+        }
+    </div>
+} @else {
+    <header class="group-header">
+        <h1>Group not found</h1>
+        <p>It may have been deleted, or the link is wrong.</p>
+    </header>
+}

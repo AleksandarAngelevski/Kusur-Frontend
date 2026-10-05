@@ -1,4 +1,7 @@
-<h2 id="header" class="section-title">Groups</h2>
+<div class="heading">
+    <h2 id="header" class="section-title">Groups</h2>
+    <a class="new-group" routerLink="/groups/new">+ New group</a>
+</div>
 <div class="groups-container register">
     @for (group of groups(); track group.id){
         <app-group-card [group]="group"/>

@@ -1,5 +1,6 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { GroupsService } from '../services/groups.service';
 
 @Component({
   imports: [DecimalPipe],
@@ -8,7 +9,16 @@ import { Component, computed, signal } from '@angular/core';
   templateUrl: './balance-component.html',
 })
 export class BalanceComponent {
-  owedBalance = signal(1241);
-  oweBalance = signal(50000);
+  private groups = inject(GroupsService).groups;
+
+  /** totals across groups: what I'm owed where I'm ahead, and what I owe in the rest */
+  owedBalance = computed(() => this.sum((balance) => balance > 0));
+  oweBalance = computed(() => -this.sum((balance) => balance < 0));
   netBalance = computed(() => this.owedBalance() - this.oweBalance());
+
+  private sum(include: (balance: number) => boolean): number {
+    return this.groups()
+      .filter((group) => include(group.balance))
+      .reduce((total, group) => total + group.balance, 0);
+  }
 }

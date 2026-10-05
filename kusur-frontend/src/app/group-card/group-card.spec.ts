@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { GroupCard } from './group-card';
 
 describe('GroupCard', () => {
@@ -8,6 +9,7 @@ describe('GroupCard', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [GroupCard],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(GroupCard);
